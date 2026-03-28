@@ -256,12 +256,50 @@ TalentLens cross-references candidate claims against real-world data:
 | **CLI** | Typer + Rich |
 | **Verification** | OpenCorporates API, DNS MX lookups, HTTP resolution |
 | **Export** | python-docx (DOCX), JSON |
+| **CI/CD** | GitHub Actions (lint, security, typecheck, test, Docker) |
+| **Code Quality** | Ruff (lint+format), Bandit (security), Mypy (types) |
+| **Containerization** | Docker + Docker Compose |
+
+---
+
+## 🐳 Docker
+
+```bash
+# Quick start with Docker Compose
+docker compose up --build -d
+
+# Or build manually
+docker build -t talentlens:latest .
+docker run -p 8503:8503 --env-file .env talentlens:latest
+```
+
+---
+
+## 🧑‍💻 Development
+
+```bash
+# Install dev dependencies + pre-commit hooks
+make dev
+
+# Available commands
+make help          # Show all commands
+make lint          # Run ruff linter
+make format        # Auto-format code
+make security      # Run bandit security scan
+make typecheck     # Run mypy
+make test          # Run all tests
+make dashboard     # Start Streamlit dashboard
+make docker        # Build + run with Docker Compose
+make clean         # Remove caches and build artifacts
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide.
 
 ---
 
 ## 📄 License
 
-MIT — use it, fork it, build on it.
+MIT — use it, fork it, build on it. See [LICENSE](LICENSE).
 
 ---
 

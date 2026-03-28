@@ -1,4 +1,4 @@
-# Resume Screener Pro
+# TalentLens
 __pycache__/
 *.pyc
 *.pyo
@@ -47,3 +47,16 @@ Thumbs.db
 
 # Backup
 *.bak
+
+# Tool caches
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+coverage.xml
+*.cover
+test-results.xml
+bandit-report.json
+
+# Docker
+.dockerignore

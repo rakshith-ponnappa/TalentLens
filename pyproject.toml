@@ -1,0 +1,140 @@
+[project]
+name = "talentlens"
+version = "3.0.0"
+description = "Multi-agent AI resume screening pipeline — 11 specialist agents, hybrid NLP scoring, background verification, and interview prep."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+authors = [
+    {name = "Rakshith Ponnappa", email = "rakshith-ponnappa@users.noreply.github.com"},
+]
+keywords = ["resume", "screening", "ai", "multi-agent", "nlp", "hiring", "streamlit"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "pdfplumber>=0.10.0",
+    "python-docx>=1.1.0",
+    "pydantic>=2.5.0",
+    "python-dotenv>=1.0.0",
+    "sentence-transformers>=2.6.0",
+    "spacy>=3.7.0",
+    "scikit-learn>=1.4.0",
+    "numpy>=1.26.0",
+    "openai>=1.30.0",
+    "anthropic>=0.25.0",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.2.0",
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    "python-dateutil>=2.9.0",
+    "phonenumbers>=8.13.0",
+    "streamlit>=1.35.0",
+    "plotly>=5.20.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "bandit>=1.7.8",
+    "pre-commit>=3.7.0",
+    "pytest>=8.2.0",
+    "pytest-cov>=5.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/rakshith-ponnappa/TalentLens"
+Repository = "https://github.com/rakshith-ponnappa/TalentLens"
+Issues = "https://github.com/rakshith-ponnappa/TalentLens/issues"
+
+[project.scripts]
+talentlens = "main:app"
+
+# ── Ruff (linting + formatting) ────────────────────────────────────
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+exclude = [".venv", "__pycache__", "*.bak"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "S",    # flake8-bandit
+    "T20",  # flake8-print
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "S101",   # assert used — fine in tests
+    "T201",   # print used — CLI tool uses print
+    "S603",   # subprocess without shell=True — not applicable
+    "S607",   # partial path in subprocess — not applicable
+    "E501",   # line too long — handled by formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"test_*.py" = ["S101", "T201"]
+"_test_*.py" = ["S101", "T201"]
+"dashboard*.py" = ["T201"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ── Mypy (type checking) ──────────────────────────────────────────
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+check_untyped_defs = true
+exclude = [".venv", "__pycache__"]
+
+# ── Pytest ─────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["test_*.py", "_test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+# ── Bandit (security) ─────────────────────────────────────────────
+[tool.bandit]
+exclude_dirs = [".venv", "__pycache__"]
+skips = ["B101"]  # assert is fine
+
+# ── Coverage ──────────────────────────────────────────────────────
+[tool.coverage.run]
+source = ["."]
+omit = [
+    ".venv/*",
+    "__pycache__/*",
+    "test_*.py",
+    "_test_*.py",
+    "dashboard*.py",
+    "*.bak",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 40
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__",
+    "if TYPE_CHECKING",
+]

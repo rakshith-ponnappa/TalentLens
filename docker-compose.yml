@@ -1,0 +1,23 @@
+services:
+  talentlens:
+    build: .
+    container_name: talentlens
+    ports:
+      - "8503:8503"
+    env_file:
+      - .env
+    volumes:
+      - ./data/resumes:/app/data/resumes
+      - ./data/jds:/app/data/jds
+      - ./output:/app/output
+      - talentlens-db:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8503/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  talentlens-db:
