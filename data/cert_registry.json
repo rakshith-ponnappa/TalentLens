@@ -1,0 +1,201 @@
+{
+  "certifications": [
+    {
+      "name": "AWS Certified Solutions Architect – Associate",
+      "aliases": ["aws solutions architect associate", "aws saa", "aws saa-c03", "aws certified solutions architect associate"],
+      "issuer": "Amazon Web Services",
+      "verify_url": "https://www.credly.com/org/amazon-web-services",
+      "credly_org": "amazon-web-services",
+      "certmetrics_url": "https://www.certmetrics.com/amazon/public/transcript.aspx"
+    },
+    {
+      "name": "AWS Certified Solutions Architect – Professional",
+      "aliases": ["aws sap", "aws sap-c02", "aws certified solutions architect professional"],
+      "issuer": "Amazon Web Services",
+      "verify_url": "https://www.credly.com/org/amazon-web-services",
+      "credly_org": "amazon-web-services"
+    },
+    {
+      "name": "AWS Certified DevOps Engineer – Professional",
+      "aliases": ["aws devops professional", "aws dop-c02"],
+      "issuer": "Amazon Web Services",
+      "verify_url": "https://www.credly.com/org/amazon-web-services",
+      "credly_org": "amazon-web-services"
+    },
+    {
+      "name": "AWS Certified Developer – Associate",
+      "aliases": ["aws developer associate", "aws dva-c02"],
+      "issuer": "Amazon Web Services",
+      "verify_url": "https://www.credly.com/org/amazon-web-services",
+      "credly_org": "amazon-web-services"
+    },
+    {
+      "name": "AWS Certified SysOps Administrator – Associate",
+      "aliases": ["aws sysops associate", "aws soa-c02"],
+      "issuer": "Amazon Web Services",
+      "verify_url": "https://www.credly.com/org/amazon-web-services",
+      "credly_org": "amazon-web-services"
+    },
+    {
+      "name": "Microsoft Certified: Azure Administrator Associate",
+      "aliases": ["az-104", "azure administrator", "azure admin associate"],
+      "issuer": "Microsoft",
+      "verify_url": "https://learn.microsoft.com/en-us/certifications/verify",
+      "credly_org": "microsoft-certification"
+    },
+    {
+      "name": "Microsoft Certified: Azure Solutions Architect Expert",
+      "aliases": ["az-305", "az-304", "azure solutions architect expert"],
+      "issuer": "Microsoft",
+      "verify_url": "https://learn.microsoft.com/en-us/certifications/verify",
+      "credly_org": "microsoft-certification"
+    },
+    {
+      "name": "Microsoft Certified: Azure DevOps Engineer Expert",
+      "aliases": ["az-400", "azure devops engineer"],
+      "issuer": "Microsoft",
+      "verify_url": "https://learn.microsoft.com/en-us/certifications/verify",
+      "credly_org": "microsoft-certification"
+    },
+    {
+      "name": "Microsoft Certified: Azure Security Engineer Associate",
+      "aliases": ["az-500", "azure security engineer"],
+      "issuer": "Microsoft",
+      "verify_url": "https://learn.microsoft.com/en-us/certifications/verify",
+      "credly_org": "microsoft-certification"
+    },
+    {
+      "name": "Google Cloud Professional Cloud Architect",
+      "aliases": ["gcp professional cloud architect", "google cloud architect"],
+      "issuer": "Google",
+      "verify_url": "https://google.accredible.com",
+      "credly_org": null
+    },
+    {
+      "name": "Google Cloud Professional Data Engineer",
+      "aliases": ["gcp professional data engineer", "google cloud data engineer"],
+      "issuer": "Google",
+      "verify_url": "https://google.accredible.com",
+      "credly_org": null
+    },
+    {
+      "name": "Google Cloud Associate Cloud Engineer",
+      "aliases": ["gcp associate cloud engineer", "google cloud associate"],
+      "issuer": "Google",
+      "verify_url": "https://google.accredible.com",
+      "credly_org": null
+    },
+    {
+      "name": "Certified Kubernetes Administrator",
+      "aliases": ["cka", "linux foundation cka"],
+      "issuer": "Cloud Native Computing Foundation (CNCF) / Linux Foundation",
+      "verify_url": "https://training.linuxfoundation.org/certification/verify",
+      "credly_org": null
+    },
+    {
+      "name": "Certified Kubernetes Application Developer",
+      "aliases": ["ckad", "linux foundation ckad"],
+      "issuer": "Cloud Native Computing Foundation (CNCF) / Linux Foundation",
+      "verify_url": "https://training.linuxfoundation.org/certification/verify",
+      "credly_org": null
+    },
+    {
+      "name": "Certified Kubernetes Security Specialist",
+      "aliases": ["cks"],
+      "issuer": "Cloud Native Computing Foundation (CNCF) / Linux Foundation",
+      "verify_url": "https://training.linuxfoundation.org/certification/verify",
+      "credly_org": null
+    },
+    {
+      "name": "HashiCorp Certified: Terraform Associate",
+      "aliases": ["terraform associate", "hashicorp terraform associate"],
+      "issuer": "HashiCorp",
+      "verify_url": "https://www.credly.com/org/hashicorp",
+      "credly_org": "hashicorp"
+    },
+    {
+      "name": "HashiCorp Certified: Vault Associate",
+      "aliases": ["vault associate", "hashicorp vault associate"],
+      "issuer": "HashiCorp",
+      "verify_url": "https://www.credly.com/org/hashicorp",
+      "credly_org": "hashicorp"
+    },
+    {
+      "name": "Cisco Certified Network Associate",
+      "aliases": ["ccna", "cisco ccna"],
+      "issuer": "Cisco",
+      "verify_url": "https://cp.certmetrics.com/cisco/en/public/verify/credential",
+      "credly_org": "cisco"
+    },
+    {
+      "name": "Cisco Certified Network Professional",
+      "aliases": ["ccnp", "cisco ccnp"],
+      "issuer": "Cisco",
+      "verify_url": "https://cp.certmetrics.com/cisco/en/public/verify/credential",
+      "credly_org": "cisco"
+    },
+    {
+      "name": "Certified Information Systems Security Professional",
+      "aliases": ["cissp"],
+      "issuer": "ISC2",
+      "verify_url": "https://www.isc2.org/MemberVerification",
+      "credly_org": "isc2"
+    },
+    {
+      "name": "Certified Cloud Security Professional",
+      "aliases": ["ccsp"],
+      "issuer": "ISC2",
+      "verify_url": "https://www.isc2.org/MemberVerification",
+      "credly_org": "isc2"
+    },
+    {
+      "name": "CompTIA Security+",
+      "aliases": ["security+", "comptia security plus", "sec+"],
+      "issuer": "CompTIA",
+      "verify_url": "https://www.credly.com/org/comptia",
+      "credly_org": "comptia"
+    },
+    {
+      "name": "PMI Project Management Professional",
+      "aliases": ["pmp", "project management professional"],
+      "issuer": "PMI",
+      "verify_url": "https://certification.pmi.org/registry.aspx",
+      "credly_org": "pmi"
+    },
+    {
+      "name": "Certified Scrum Master",
+      "aliases": ["csm", "scrum master certified"],
+      "issuer": "Scrum Alliance",
+      "verify_url": "https://www.scrumalliance.org/community/profile",
+      "credly_org": null
+    },
+    {
+      "name": "Docker Certified Associate",
+      "aliases": ["dca", "docker certified"],
+      "issuer": "Docker",
+      "verify_url": "https://www.credly.com/org/docker",
+      "credly_org": "docker"
+    },
+    {
+      "name": "Red Hat Certified Engineer",
+      "aliases": ["rhce", "red hat certified engineer"],
+      "issuer": "Red Hat",
+      "verify_url": "https://rhtapps.redhat.com/verify",
+      "credly_org": "red-hat"
+    },
+    {
+      "name": "Red Hat Certified System Administrator",
+      "aliases": ["rhcsa", "red hat certified system administrator"],
+      "issuer": "Red Hat",
+      "verify_url": "https://rhtapps.redhat.com/verify",
+      "credly_org": "red-hat"
+    },
+    {
+      "name": "Certified Data Professional",
+      "aliases": ["cdp"],
+      "issuer": "DAMA International",
+      "verify_url": "https://www.dama.org/cpages/cdp-certified-data-professional",
+      "credly_org": null
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+# Resume Screener Pro
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Data / runtime
+data/.tmp/
+data/screening_history.db
+*.db
+
+# Uploaded resumes & JD documents (keep .gitkeep)
+data/resumes/*.docx
+data/resumes/*.pdf
+data/jds/*.docx
+data/jds/*.pdf
+
+# Output reports
+output/
+
+# Session state
+.session.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / keys
+.env
+*.key
+*.pem
+
+# Backup
+*.bak
