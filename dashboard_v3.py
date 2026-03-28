@@ -50,8 +50,8 @@ from heuristics import extract_skills, extract_experience_range, extract_educati
 # Page config
 # ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Resume Screener Pro",
-    page_icon="📋",
+    page_title="TalentLens",
+    page_icon="🔍",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -367,15 +367,15 @@ PAGES = ["🏠 Welcome", "📄 JD Management", "🔍 Screening", "📊 Results",
 with st.sidebar:
     st.markdown("""
     <div style="text-align:center; padding: 1.2rem 0 0.8rem 0;">
-        <div style="font-size:2.5rem; margin-bottom:0.3rem;">📋</div>
+        <div style="font-size:2.5rem; margin-bottom:0.3rem;">�</div>
         <div style="font-size:1.3rem; font-weight:800; letter-spacing:-0.02em;
                     background:linear-gradient(135deg,#38bdf8,#818cf8);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
-            Resume Screener
+            TalentLens
         </div>
         <div style="color:#475569; font-size:0.72rem; font-weight:600;
                     letter-spacing:0.1em; text-transform:uppercase; margin-top:0.2rem;">
-            Multi-Agent · AI-Powered
+            See beyond the resume
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -410,7 +410,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("""
     <div style="text-align:center; padding:0.5rem 0;">
-        <span style="color:#334155; font-size:0.7rem;">v3.0 · 11 Agents · Heuristic Mode</span>
+        <span style="color:#334155; font-size:0.7rem;">TalentLens v3.0 · 11 Agents · Heuristic Mode</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -419,8 +419,8 @@ with st.sidebar:
 # PAGE: WELCOME
 # =====================================================================
 if selected_page == "🏠 Welcome":
-    _hero("📋 Resume Screener Pro",
-          "Multi-Agent Evaluation · Skills Matching · Background Verification · Interview Prep",
+    _hero("� TalentLens",
+          "See beyond the resume — Multi-Agent Evaluation · Skills Matching · Verification · Interview Prep",
           "11 SPECIALIST AGENTS")
 
     # Quick stats
