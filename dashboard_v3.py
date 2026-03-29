@@ -16,6 +16,7 @@ Run:  streamlit run dashboard_v3.py
 from __future__ import annotations
 
 import json
+import pickle
 import sys
 import time
 from datetime import datetime, date
@@ -257,7 +258,10 @@ st.markdown("""
 # ---------------------------------------------------------------------------
 # Session state defaults
 # ---------------------------------------------------------------------------
-for key, default in {
+_SESSION_FILE = Path(__file__).parent / "data" / ".session_state.pkl"
+_UPLOAD_DIR = Path(__file__).parent / "data" / ".uploads"
+
+_DEFAULTS = {
     "jd_criteria": None,
     "scores": [],
     "agent_results": {},
@@ -267,9 +271,86 @@ for key, default in {
     "selected_jd_id": None,
     "current_page": "Welcome",
     "pipeline_stage": None,
-}.items():
+    # ── New: Upload persistence ──
+    "uploaded_resume_data": {},       # {filename: bytes}
+    "uploaded_jd_source_text": "",    # JD text that was screened
+    "uploaded_jd_name": "",           # JD name/label
+    # ── New: Pipeline state ──
+    "pipeline_completed": False,
+    "pipeline_timestamp": None,
+    "pipeline_candidate_count": 0,
+    # ── New: Navigation ──
+    "auto_navigate_to": None,
+    # ── New: Session recovery ──
+    "_state_restored": False,
+}
+
+for key, default in _DEFAULTS.items():
     if key not in st.session_state:
         st.session_state[key] = default
+
+
+# ---------------------------------------------------------------------------
+# Disk persistence — survives browser refresh + server restart
+# ---------------------------------------------------------------------------
+_PERSIST_KEYS = [
+    "jd_criteria", "scores", "agent_results", "questionnaires",
+    "jd_text", "last_session_id", "selected_jd_id",
+    "uploaded_jd_source_text", "uploaded_jd_name",
+    "pipeline_completed", "pipeline_timestamp", "pipeline_candidate_count",
+    "uploaded_resume_data",
+]
+
+
+def _save_state_to_disk():
+    """Pickle critical session state to disk for persistence."""
+    try:
+        _SESSION_FILE.parent.mkdir(parents=True, exist_ok=True)
+        data = {}
+        for key in _PERSIST_KEYS:
+            if key in st.session_state:
+                data[key] = st.session_state[key]
+        with open(_SESSION_FILE, "wb") as f:
+            pickle.dump(data, f)
+    except Exception:
+        pass  # Non-critical — don't break the app
+
+
+def _restore_state_from_disk():
+    """Restore session state from disk if available."""
+    if st.session_state.get("_state_restored"):
+        return False
+    st.session_state._state_restored = True
+    if not _SESSION_FILE.exists():
+        return False
+    try:
+        with open(_SESSION_FILE, "rb") as f:
+            data = pickle.load(f)  # noqa: S301  — trusted local file only
+        if not isinstance(data, dict):
+            return False
+        has_data = bool(data.get("scores") or data.get("pipeline_completed"))
+        if has_data:
+            for key, val in data.items():
+                if key in _PERSIST_KEYS:
+                    st.session_state[key] = val
+        return has_data
+    except Exception:
+        return False
+
+
+def _clear_persisted_state():
+    """Clear persisted state from disk and reset session."""
+    try:
+        _SESSION_FILE.unlink(missing_ok=True)
+    except Exception:
+        pass
+    for key, default in _DEFAULTS.items():
+        if key != "_state_restored":
+            st.session_state[key] = default
+
+
+# Auto-restore on first load
+_had_saved_session = _restore_state_from_disk()
 
 
 # ---------------------------------------------------------------------------
@@ -282,6 +363,25 @@ def _save_upload(uploaded_file) -> Path:
     p.write_bytes(uploaded_file.read())
     uploaded_file.seek(0)
     return p
+
+
+def _save_upload_from_bytes(name: str, data: bytes) -> Path:
+    """Save cached file bytes to disk, return path."""
+    tmp = Path(__file__).parent / "data" / ".tmp"
+    tmp.mkdir(exist_ok=True)
+    p = tmp / name
+    p.write_bytes(data)
+    return p
+
+
+def _cache_resume_uploads(resume_files):
+    """Cache uploaded resume file bytes to session_state for persistence."""
+    if resume_files:
+        cached = {}
+        for f in resume_files:
+            cached[f.name] = f.getvalue()
+            f.seek(0)
+        st.session_state.uploaded_resume_data = cached
 
 
 def _grade_color(grade: str) -> str:
@@ -364,10 +464,17 @@ def _empty_state(icon: str, title: str, desc: str):
 PAGES = ["🏠 Welcome", "📄 JD Management", "🔍 Screening", "📊 Results",
          "🤖 Agent Panel", "📅 History", "📈 Analytics", "❓ Interview Prep"]
 
+# Handle auto-navigation (e.g., after pipeline completion)
+_nav_target = st.session_state.get("auto_navigate_to")
+_default_page_idx = 0
+if _nav_target and _nav_target in PAGES:
+    _default_page_idx = PAGES.index(_nav_target)
+    st.session_state.auto_navigate_to = None
+
 with st.sidebar:
     st.markdown("""
     <div style="text-align:center; padding: 1.2rem 0 0.8rem 0;">
-        <div style="font-size:2.5rem; margin-bottom:0.3rem;">�</div>
+        <div style="font-size:2.5rem; margin-bottom:0.3rem;">🔍</div>
         <div style="font-size:1.3rem; font-weight:800; letter-spacing:-0.02em;
                     background:linear-gradient(135deg,#38bdf8,#818cf8);
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
@@ -380,7 +487,7 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
     st.markdown("---")
-    selected_page = st.radio("Navigate", PAGES, label_visibility="collapsed")
+    selected_page = st.radio("Navigate", PAGES, index=_default_page_idx, label_visibility="collapsed")
     st.markdown("---")
 
     # Pipeline status in sidebar
@@ -389,13 +496,24 @@ with st.sidebar:
     questionnaires = st.session_state.questionnaires
 
     if scores:
+        _ts = st.session_state.get("pipeline_timestamp", "")
+        _ts_label = f" · {_ts}" if _ts else ""
         st.markdown(f"""
         <div class="pipeline-status">
+            <div style="font-size:0.72rem; color:#475569; font-weight:600; letter-spacing:0.05em;
+                        text-transform:uppercase; margin-bottom:0.5rem;">Active Session{_ts_label}</div>
             <div class="step done"><span class="icon">✅</span><span class="text">{len(scores)} candidates scored</span></div>
             <div class="step {'done' if agent_results else ''}"><span class="icon">{'✅' if agent_results else '⬜'}</span><span class="text">{len(agent_results)} agent evals</span></div>
             <div class="step {'done' if questionnaires else ''}"><span class="icon">{'✅' if questionnaires else '⬜'}</span><span class="text">{len(questionnaires)} questionnaires</span></div>
         </div>
         """, unsafe_allow_html=True)
+
+        # Clear session button
+        if st.button("🗑️ Clear Current Session", use_container_width=True):
+            _clear_persisted_state()
+            st.rerun()
+    elif _had_saved_session and st.session_state.pipeline_completed:
+        st.success("♻️ Previous session restored!")
     else:
         st.caption("No active screening session")
 
@@ -419,9 +537,14 @@ with st.sidebar:
 # PAGE: WELCOME
 # =====================================================================
 if selected_page == "🏠 Welcome":
-    _hero("� TalentLens",
+    _hero("🔍 TalentLens",
           "See beyond the resume — Multi-Agent Evaluation · Skills Matching · Verification · Interview Prep",
           "11 SPECIALIST AGENTS")
+
+    # Session recovery banner
+    if _had_saved_session and st.session_state.pipeline_completed:
+        _cnt = st.session_state.pipeline_candidate_count or len(st.session_state.scores)
+        st.info(f"♻️ **Previous session restored** — {_cnt} candidates screened. Navigate to **📊 Results** to review.")
 
     # Quick stats
     try:
@@ -815,8 +938,16 @@ elif selected_page == "🔍 Screening":
     st.markdown('<div class="sec-header green">📤 Step 2 — Upload Resumes</div>', unsafe_allow_html=True)
     resume_files = st.file_uploader("Upload candidate resumes (multiple)", type=["pdf", "docx", "doc", "txt"],
                                      accept_multiple_files=True, key="screen_resume_upload")
+
+    # Cache uploaded files to session_state for persistence across page navigation
     if resume_files:
+        _cache_resume_uploads(resume_files)
         st.caption(f"📎 {len(resume_files)} file(s) selected")
+    elif st.session_state.uploaded_resume_data:
+        # Show previously cached uploads
+        cached_names = list(st.session_state.uploaded_resume_data.keys())
+        st.info(f"📎 **{len(cached_names)} resume(s) cached from previous upload:** {', '.join(cached_names)}")
+        st.caption("Upload new files above to replace, or proceed with cached files.")
 
     # Step 3: Options
     st.markdown('<div class="sec-header purple">⚙️ Step 3 — Configure Options</div>', unsafe_allow_html=True)
@@ -857,9 +988,16 @@ elif selected_page == "🔍 Screening":
             st.error("❌ Please select, upload, or paste a JD.")
             st.stop()
 
-        if not resume_files:
+        # Use fresh uploads OR cached resume data
+        has_fresh_uploads = bool(resume_files)
+        has_cached_uploads = bool(st.session_state.uploaded_resume_data)
+
+        if not has_fresh_uploads and not has_cached_uploads:
             st.error("❌ Please upload at least one resume.")
             st.stop()
+
+        # Cache JD source text for persistence
+        st.session_state.uploaded_jd_source_text = jd_source if isinstance(jd_source, str) else ""
 
         if st.session_state.selected_jd_id and jd_source_method == "Select Saved JD":
             try:
@@ -876,18 +1014,35 @@ elif selected_page == "🔍 Screening":
             st.session_state.jd_criteria = jd
             st.session_state.jd_text = jd.raw_text[:500]
 
-        # Stage 2: Parse Resumes
-        pipeline_status.markdown(f"🔄 **Stage 2/5** — Parsing {len(resume_files)} resume(s)…")
+        # Stage 2: Parse Resumes — from fresh uploads or cached bytes
+        if has_fresh_uploads:
+            file_count = len(resume_files)
+            pipeline_status.markdown(f"🔄 **Stage 2/5** — Parsing {file_count} resume(s)…")
+        else:
+            file_count = len(st.session_state.uploaded_resume_data)
+            pipeline_status.markdown(f"🔄 **Stage 2/5** — Parsing {file_count} cached resume(s)…")
+
         candidates = []
         progress = st.progress(0, text="Parsing resumes…")
-        for i, rf in enumerate(resume_files):
-            try:
-                p = _save_upload(rf)
-                candidates.append(parse_resume(str(p), cfg))
-                progress.progress((i + 1) / len(resume_files), text=f"✅ Parsed {rf.name}")
-            except Exception as e:
-                st.warning(f"⚠️ Failed to parse {rf.name}: {e}")
-                progress.progress((i + 1) / len(resume_files))
+
+        if has_fresh_uploads:
+            for i, rf in enumerate(resume_files):
+                try:
+                    p = _save_upload(rf)
+                    candidates.append(parse_resume(str(p), cfg))
+                    progress.progress((i + 1) / file_count, text=f"✅ Parsed {rf.name}")
+                except Exception as e:
+                    st.warning(f"⚠️ Failed to parse {rf.name}: {e}")
+                    progress.progress((i + 1) / file_count)
+        else:
+            for i, (fname, fbytes) in enumerate(st.session_state.uploaded_resume_data.items()):
+                try:
+                    p = _save_upload_from_bytes(fname, fbytes)
+                    candidates.append(parse_resume(str(p), cfg))
+                    progress.progress((i + 1) / file_count, text=f"✅ Parsed {fname}")
+                except Exception as e:
+                    st.warning(f"⚠️ Failed to parse {fname}: {e}")
+                    progress.progress((i + 1) / file_count)
         progress.empty()
 
         if not candidates:
@@ -948,9 +1103,18 @@ elif selected_page == "🔍 Screening":
         except Exception as e:
             st.warning(f"History save failed: {e}")
 
+        # Persist state to disk (survives browser refresh / server restart)
+        st.session_state.pipeline_completed = True
+        st.session_state.pipeline_timestamp = datetime.now().strftime("%H:%M")
+        st.session_state.pipeline_candidate_count = len(ranked)
+        _save_state_to_disk()
+
         pipeline_status.empty()
         st.success(f"✅ **Pipeline complete!** Screened {len(ranked)} candidates · {len(agent_results)} agent evals · {len(questionnaires)} questionnaires generated")
-        st.info("Navigate to **📊 Results**, **🤖 Agent Panel**, or **❓ Interview Prep** to review.")
+
+        # Auto-navigate to Results on next rerun
+        st.session_state.auto_navigate_to = "📊 Results"
+        st.rerun()
 
 
 # =====================================================================
@@ -1313,6 +1477,13 @@ elif selected_page == "📅 History":
         )
 
         if selected_session:
+            hbtn_col1, hbtn_col2 = st.columns([3, 1])
+            with hbtn_col2:
+                if st.session_state.scores and st.session_state.get("last_session_id") == selected_session:
+                    if st.button("📊 View in Results", use_container_width=True):
+                        st.session_state.auto_navigate_to = "📊 Results"
+                        st.rerun()
+
             try:
                 cands = get_candidates_for_session(selected_session)
             except Exception:
