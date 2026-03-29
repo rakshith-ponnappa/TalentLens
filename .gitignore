@@ -60,3 +60,6 @@ bandit-report.json
 
 # Docker
 .dockerignore
+data/.session_state.pkl
+data/.tmp/
+data/.uploads/

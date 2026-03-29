@@ -58,198 +58,421 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
-# Custom CSS — glassmorphism, animations, refined typography
+# Custom CSS — premium futuristic dark theme
 # ---------------------------------------------------------------------------
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
-    html, body, [class*="css"] { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* ── Animated noise grain overlay ── */
+    .stApp::before {
+        content: '';
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
+        pointer-events: none; z-index: 0; opacity: 0.4;
+    }
+
+    /* ── Global background ── */
+    .stApp {
+        background: linear-gradient(165deg, #050816 0%, #0a0e27 25%, #0d1333 50%, #080c20 75%, #030712 100%);
+    }
+
+    /* ── Keyframe animations ── */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+    }
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(56,189,248,0.1); }
+        50% { box-shadow: 0 0 40px rgba(56,189,248,0.25); }
+    }
+    @keyframes gradient-shift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    @keyframes borderShine {
+        0% { border-color: rgba(56,189,248,0.1); }
+        50% { border-color: rgba(139,92,246,0.3); }
+        100% { border-color: rgba(56,189,248,0.1); }
+    }
 
     /* ── Hero header ── */
     .hero {
-        background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-        padding: 2rem 2.5rem; border-radius: 16px; margin-bottom: 1.5rem;
-        border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        background: linear-gradient(135deg, #0c1024 0%, #131a3d 30%, #1a1145 60%, #0f0c29 100%);
+        padding: 2.5rem 3rem; border-radius: 20px; margin-bottom: 2rem;
+        border: 1px solid rgba(139,92,246,0.15);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
         position: relative; overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
     }
     .hero::before {
-        content: ''; position: absolute; top: -50%; right: -20%; width: 400px; height: 400px;
-        background: radial-gradient(circle, rgba(56,189,248,0.12) 0%, transparent 70%);
+        content: ''; position: absolute; top: -60%; right: -15%;
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, rgba(56,189,248,0.06) 40%, transparent 70%);
+        pointer-events: none; animation: float 8s ease-in-out infinite;
+    }
+    .hero::after {
+        content: ''; position: absolute; bottom: -40%; left: -10%;
+        width: 400px; height: 400px;
+        background: radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 60%);
         pointer-events: none;
     }
-    .hero h1 { color: #f1f5f9; font-size: 2rem; font-weight: 800; margin: 0; letter-spacing: -0.02em; }
-    .hero .subtitle { color: #94a3b8; margin: 0.4rem 0 0 0; font-size: 0.95rem; font-weight: 400; }
+    .hero h1 {
+        color: #f1f5f9; font-size: 2.2rem; font-weight: 900; margin: 0;
+        letter-spacing: -0.03em; position: relative;
+    }
+    .hero .subtitle {
+        color: #94a3b8; margin: 0.5rem 0 0 0; font-size: 0.95rem;
+        font-weight: 400; letter-spacing: 0.01em; position: relative;
+    }
     .hero .badge {
-        display: inline-block; background: rgba(56,189,248,0.15); color: #38bdf8;
-        padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.75rem;
-        font-weight: 600; letter-spacing: 0.03em; margin-top: 0.5rem;
-        border: 1px solid rgba(56,189,248,0.25);
+        display: inline-block;
+        background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(56,189,248,0.2));
+        color: #a78bfa; padding: 0.25rem 0.9rem; border-radius: 20px;
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
+        margin-top: 0.7rem; border: 1px solid rgba(139,92,246,0.3);
+        text-transform: uppercase; position: relative;
     }
 
     /* ── Glass metric cards ── */
     .glass-card {
-        background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
-        padding: 1.5rem; text-align: center;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        background: linear-gradient(145deg, rgba(15,23,42,0.8), rgba(30,41,59,0.4));
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.06); border-radius: 18px;
+        padding: 1.6rem; text-align: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative; overflow: hidden;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.2);
     }
-    .glass-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+    .glass-card::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    }
+    .glass-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 30px rgba(56,189,248,0.08);
+        border-color: rgba(56,189,248,0.2);
+    }
     .glass-card .value {
-        font-size: 2.4rem; font-weight: 800; letter-spacing: -0.02em;
-        background: linear-gradient(135deg, #38bdf8, #818cf8);
+        font-size: 2.6rem; font-weight: 900; letter-spacing: -0.03em;
+        background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #a78bfa 100%);
+        background-size: 200% auto; animation: shimmer 3s linear infinite;
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         background-clip: text;
     }
     .glass-card .label {
-        font-size: 0.78rem; color: #64748b; text-transform: uppercase;
-        letter-spacing: 0.08em; margin-top: 0.3rem; font-weight: 600;
+        font-size: 0.72rem; color: #64748b; text-transform: uppercase;
+        letter-spacing: 0.1em; margin-top: 0.4rem; font-weight: 700;
     }
-    .glass-card .sublabel { font-size: 0.7rem; color: #475569; margin-top: 0.15rem; }
+    .glass-card .sublabel {
+        font-size: 0.68rem; color: #475569; margin-top: 0.15rem; font-weight: 500;
+    }
 
     /* ── Feature cards (Welcome) ── */
     .feature-card {
-        background: rgba(30,41,59,0.5); backdrop-filter: blur(8px);
-        border: 1px solid rgba(255,255,255,0.06); border-radius: 14px;
-        padding: 1.5rem; text-align: center; min-height: 180px;
-        transition: transform 0.2s ease, border-color 0.3s ease;
+        background: linear-gradient(145deg, rgba(15,23,42,0.7), rgba(30,41,59,0.3));
+        backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 18px; padding: 2rem 1.5rem; text-align: center;
+        min-height: 200px; position: relative; overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .feature-card:hover { transform: translateY(-3px); border-color: rgba(56,189,248,0.3); }
-    .feature-card .icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
-    .feature-card h4 { color: #e2e8f0; font-size: 1rem; margin: 0.4rem 0; font-weight: 700; }
-    .feature-card p { color: #94a3b8; font-size: 0.85rem; line-height: 1.5; margin: 0; }
+    .feature-card::before {
+        content: ''; position: absolute; inset: 0; border-radius: 18px;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(56,189,248,0), rgba(139,92,246,0.2), rgba(56,189,248,0));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor; mask-composite: exclude;
+        opacity: 0; transition: opacity 0.4s ease;
+    }
+    .feature-card:hover { transform: translateY(-6px) scale(1.02); }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-card .icon {
+        font-size: 2.5rem; margin-bottom: 0.6rem;
+        filter: drop-shadow(0 4px 12px rgba(56,189,248,0.3));
+    }
+    .feature-card h4 {
+        color: #e2e8f0; font-size: 1.05rem; margin: 0.5rem 0; font-weight: 800;
+        letter-spacing: -0.01em;
+    }
+    .feature-card p { color: #94a3b8; font-size: 0.85rem; line-height: 1.6; margin: 0; }
 
     /* ── Agent cards ── */
     .agent-tile {
-        background: rgba(30,41,59,0.5); border-radius: 12px;
-        padding: 1rem 1.2rem; border-left: 4px solid #3b82f6;
-        transition: transform 0.15s ease; min-height: 80px;
+        background: linear-gradient(145deg, rgba(15,23,42,0.7), rgba(30,41,59,0.3));
+        border-radius: 14px; padding: 1.2rem 1.4rem;
+        border-left: 3px solid #3b82f6; min-height: 90px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative; overflow: hidden;
     }
-    .agent-tile:hover { transform: translateX(3px); }
-    .agent-tile .aname { font-weight: 700; color: #e2e8f0; font-size: 0.9rem; }
-    .agent-tile .adesc { color: #64748b; font-size: 0.78rem; margin-top: 0.2rem; }
+    .agent-tile::after {
+        content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    }
+    .agent-tile:hover {
+        transform: translateX(4px) scale(1.01);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .agent-tile .aname { font-weight: 800; color: #e2e8f0; font-size: 0.92rem; }
+    .agent-tile .adesc { color: #64748b; font-size: 0.78rem; margin-top: 0.25rem; font-weight: 500; }
     .agent-tile .aweight {
-        display: inline-block; background: rgba(56,189,248,0.15); color: #38bdf8;
-        padding: 0.1rem 0.5rem; border-radius: 10px; font-size: 0.7rem;
-        font-weight: 700; margin-top: 0.3rem;
+        display: inline-block;
+        background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(139,92,246,0.15));
+        color: #a78bfa; padding: 0.15rem 0.6rem; border-radius: 10px;
+        font-size: 0.68rem; font-weight: 800; margin-top: 0.4rem;
+        border: 1px solid rgba(139,92,246,0.2);
+        font-family: 'JetBrains Mono', monospace;
     }
-    .agent-tile.green { border-left-color: #10b981; }
-    .agent-tile.blue { border-left-color: #3b82f6; }
+    .agent-tile.green  { border-left-color: #10b981; }
+    .agent-tile.blue   { border-left-color: #3b82f6; }
     .agent-tile.yellow { border-left-color: #f59e0b; }
-    .agent-tile.red { border-left-color: #ef4444; }
+    .agent-tile.red    { border-left-color: #ef4444; }
     .agent-tile.purple { border-left-color: #8b5cf6; }
-    .agent-tile.cyan { border-left-color: #06b6d4; }
+    .agent-tile.cyan   { border-left-color: #06b6d4; }
 
     /* ── Section headers ── */
     .sec-header {
-        border-left: 4px solid #3b82f6; padding-left: 14px;
-        margin: 2rem 0 1.2rem 0; font-size: 1.15rem; font-weight: 700;
-        color: #e2e8f0; letter-spacing: -0.01em;
+        border-left: 3px solid #3b82f6; padding-left: 16px;
+        margin: 2.5rem 0 1.5rem 0; font-size: 1.2rem; font-weight: 800;
+        color: #e2e8f0; letter-spacing: -0.02em;
+        animation: fadeInUp 0.5s ease-out;
     }
-    .sec-header.green { border-left-color: #10b981; }
+    .sec-header.green  { border-left-color: #10b981; }
     .sec-header.purple { border-left-color: #8b5cf6; }
     .sec-header.yellow { border-left-color: #f59e0b; }
+    .sec-header.cyan   { border-left-color: #06b6d4; }
 
     /* ── Candidate rank badges ── */
     .rank-badge {
         display: inline-flex; align-items: center; gap: 0.4rem;
-        padding: 0.3rem 0.8rem; border-radius: 8px; font-weight: 700;
-        font-size: 0.85rem;
+        padding: 0.35rem 0.9rem; border-radius: 10px; font-weight: 800;
+        font-size: 0.82rem; font-family: 'JetBrains Mono', monospace;
     }
-    .rank-badge.gold { background: rgba(245,158,11,0.15); color: #f59e0b; }
-    .rank-badge.silver { background: rgba(148,163,184,0.15); color: #94a3b8; }
-    .rank-badge.bronze { background: rgba(234,88,12,0.15); color: #ea580c; }
+    .rank-badge.gold   { background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05)); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+    .rank-badge.silver { background: linear-gradient(135deg, rgba(148,163,184,0.15), rgba(148,163,184,0.05)); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+    .rank-badge.bronze { background: linear-gradient(135deg, rgba(234,88,12,0.15), rgba(234,88,12,0.05)); color: #ea580c; border: 1px solid rgba(234,88,12,0.2); }
     .rank-badge.default { background: rgba(100,116,139,0.1); color: #64748b; }
 
     /* ── Grade pills ── */
     .grade-pill {
-        display: inline-block; padding: 0.15rem 0.6rem; border-radius: 6px;
-        font-weight: 800; font-size: 0.8rem; letter-spacing: 0.03em;
+        display: inline-block; padding: 0.2rem 0.7rem; border-radius: 8px;
+        font-weight: 900; font-size: 0.78rem; letter-spacing: 0.05em;
+        font-family: 'JetBrains Mono', monospace;
     }
-    .grade-pill.a-plus, .grade-pill.a { background: rgba(16,185,129,0.15); color: #10b981; }
-    .grade-pill.b-plus, .grade-pill.b { background: rgba(59,130,246,0.15); color: #3b82f6; }
-    .grade-pill.c { background: rgba(245,158,11,0.15); color: #f59e0b; }
-    .grade-pill.d { background: rgba(249,115,22,0.15); color: #f97316; }
-    .grade-pill.f { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .grade-pill.a-plus, .grade-pill.a { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+    .grade-pill.b-plus, .grade-pill.b { background: rgba(59,130,246,0.15); color: #3b82f6; border: 1px solid rgba(59,130,246,0.2); }
+    .grade-pill.c { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+    .grade-pill.d { background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.2); }
+    .grade-pill.f { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+
+    /* ── Score gauge (circular) ── */
+    .score-gauge {
+        position: relative; width: 120px; height: 120px; margin: 0 auto;
+    }
+    .score-gauge svg { transform: rotate(-90deg); }
+    .score-gauge .gauge-val {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        font-size: 1.6rem; font-weight: 900; color: #e2e8f0;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Candidate card ── */
+    .cand-card {
+        background: linear-gradient(145deg, rgba(15,23,42,0.8), rgba(30,41,59,0.3));
+        border: 1px solid rgba(255,255,255,0.06); border-radius: 20px;
+        padding: 2rem; margin: 1rem 0; position: relative; overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .cand-card::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+        background-size: 200% auto; animation: gradient-shift 4s ease infinite;
+    }
+    .cand-card:hover { box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .cand-card .cand-name {
+        font-size: 1.3rem; font-weight: 900; color: #f1f5f9;
+        letter-spacing: -0.02em;
+    }
+    .cand-card .cand-meta { color: #64748b; font-size: 0.82rem; margin-top: 0.2rem; }
+    .cand-card .cand-score {
+        font-size: 2.2rem; font-weight: 900;
+        font-family: 'JetBrains Mono', monospace;
+        background: linear-gradient(135deg, #38bdf8, #818cf8);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .cand-card .cand-badge {
+        display: inline-block; padding: 0.2rem 0.7rem; border-radius: 8px;
+        font-weight: 800; font-size: 0.75rem; margin-left: 0.5rem;
+    }
+
+    /* ── Avatar initials ── */
+    .avatar {
+        width: 48px; height: 48px; border-radius: 14px;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-weight: 900; font-size: 1.1rem; color: #fff;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+        flex-shrink: 0;
+    }
 
     /* ── Step indicator ── */
     .step-row { display: flex; justify-content: center; gap: 0; margin: 1.5rem 0; }
     .step-item {
         display: flex; align-items: center; gap: 0.5rem;
-        padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 600;
-        color: #475569; position: relative;
+        padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 600; color: #475569;
     }
     .step-item.active { color: #38bdf8; }
-    .step-item.done { color: #10b981; }
+    .step-item.done   { color: #10b981; }
     .step-num {
-        width: 28px; height: 28px; border-radius: 50%; display: inline-flex;
+        width: 30px; height: 30px; border-radius: 50%; display: inline-flex;
         align-items: center; justify-content: center; font-size: 0.75rem;
-        font-weight: 800; border: 2px solid #334155;
+        font-weight: 900; border: 2px solid #334155;
+        font-family: 'JetBrains Mono', monospace;
     }
     .step-item.active .step-num { border-color: #38bdf8; background: rgba(56,189,248,0.15); color: #38bdf8; }
-    .step-item.done .step-num { border-color: #10b981; background: rgba(16,185,129,0.15); color: #10b981; }
+    .step-item.done   .step-num { border-color: #10b981; background: rgba(16,185,129,0.15); color: #10b981; }
     .step-connector { width: 40px; height: 2px; background: #334155; align-self: center; }
     .step-connector.done { background: #10b981; }
 
     /* ── Discussion bubbles ── */
     .disc-bubble {
-        background: rgba(30,41,59,0.6); border-radius: 10px;
-        padding: 0.6rem 1rem; margin: 0.4rem 0;
-        border-left: 3px solid #475569; font-size: 0.88rem; color: #cbd5e1;
+        background: linear-gradient(145deg, rgba(15,23,42,0.7), rgba(30,41,59,0.3));
+        border-radius: 12px; padding: 0.8rem 1.2rem; margin: 0.5rem 0;
+        border-left: 3px solid #334155; font-size: 0.88rem; color: #cbd5e1;
+        transition: border-color 0.3s ease;
     }
-    .disc-bubble .agent { font-weight: 700; color: #38bdf8; }
-    .disc-bubble .round { color: #475569; font-size: 0.75rem; font-weight: 600; }
+    .disc-bubble:hover { border-left-color: #38bdf8; }
+    .disc-bubble .agent { font-weight: 800; color: #38bdf8; }
+    .disc-bubble .round {
+        color: #475569; font-size: 0.7rem; font-weight: 700;
+        font-family: 'JetBrains Mono', monospace;
+    }
 
     /* ── Pipeline progress ── */
     .pipeline-status {
-        background: rgba(30,41,59,0.7); border-radius: 12px;
-        padding: 1rem 1.5rem; border: 1px solid rgba(255,255,255,0.06);
-        margin: 0.5rem 0;
+        background: linear-gradient(145deg, rgba(15,23,42,0.8), rgba(30,41,59,0.3));
+        border-radius: 14px; padding: 1.2rem 1.5rem;
+        border: 1px solid rgba(255,255,255,0.05); margin: 0.5rem 0;
+        animation: pulse-glow 4s ease-in-out infinite;
     }
-    .pipeline-status .step { display: flex; align-items: center; gap: 0.6rem; padding: 0.3rem 0; }
+    .pipeline-status .step { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0; }
     .pipeline-status .step .icon { font-size: 1.1rem; }
-    .pipeline-status .step .text { color: #94a3b8; font-size: 0.85rem; }
-    .pipeline-status .step.active .text { color: #38bdf8; font-weight: 600; }
+    .pipeline-status .step .text { color: #94a3b8; font-size: 0.82rem; font-weight: 500; }
+    .pipeline-status .step.active .text { color: #38bdf8; font-weight: 700; }
     .pipeline-status .step.done .text { color: #10b981; }
 
     /* ── Empty state ── */
     .empty-state {
-        text-align: center; padding: 3rem 2rem;
-        background: rgba(30,41,59,0.3); border-radius: 16px;
-        border: 1px dashed rgba(100,116,139,0.3);
+        text-align: center; padding: 4rem 2rem;
+        background: linear-gradient(145deg, rgba(15,23,42,0.5), rgba(30,41,59,0.2));
+        border-radius: 20px; border: 1px dashed rgba(100,116,139,0.2);
     }
-    .empty-state .icon { font-size: 3rem; margin-bottom: 0.5rem; }
-    .empty-state h3 { color: #94a3b8; font-weight: 600; margin: 0.5rem 0; }
+    .empty-state .icon { font-size: 3.5rem; margin-bottom: 0.8rem; filter: grayscale(0.3); }
+    .empty-state h3 { color: #94a3b8; font-weight: 700; margin: 0.5rem 0; }
     .empty-state p { color: #64748b; font-size: 0.9rem; }
 
-    /* ── Sidebar ── */
+    /* ── Sidebar — obsidian glass ── */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0c0e1a 0%, #131629 40%, #1a1d35 100%);
+        background: linear-gradient(180deg, #050816 0%, #0a0e27 30%, #0d1130 60%, #080c20 100%) !important;
+        border-right: 1px solid rgba(139,92,246,0.1);
+    }
+    [data-testid="stSidebar"]::before {
+        content: ''; position: absolute; top: 0; right: 0; width: 1px; height: 100%;
+        background: linear-gradient(180deg, transparent, rgba(56,189,248,0.2), rgba(139,92,246,0.2), transparent);
     }
     [data-testid="stSidebar"] * { color: #e2e8f0 !important; }
-    [data-testid="stSidebar"] .stRadio label { padding: 0.4rem 0; }
+    [data-testid="stSidebar"] .stRadio label {
+        padding: 0.5rem 0; transition: color 0.2s ease;
+    }
 
     /* ── Data tables ── */
     .stDataFrame thead th {
-        background: rgba(30,41,59,0.8) !important; color: #e2e8f0 !important;
-        font-weight: 700 !important; font-size: 0.82rem !important;
+        background: rgba(15,23,42,0.8) !important; color: #e2e8f0 !important;
+        font-weight: 800 !important; font-size: 0.8rem !important;
+        letter-spacing: 0.02em !important;
+    }
+    .stDataFrame tbody td {
+        font-family: 'Inter', sans-serif !important; font-size: 0.85rem !important;
     }
 
     /* ── Global tweaks ── */
-    .stExpander { border: 1px solid rgba(255,255,255,0.06) !important; border-radius: 12px !important; }
-    .stTabs [data-baseweb="tab"] { font-weight: 600; }
-    div[data-testid="stMetric"] label { font-size: 0.78rem !important; color: #64748b !important; }
-    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        font-size: 1.6rem !important; font-weight: 800 !important;
+    .stExpander {
+        border: 1px solid rgba(255,255,255,0.05) !important;
+        border-radius: 14px !important;
+        background: rgba(15,23,42,0.3) !important;
     }
+    .stTabs [data-baseweb="tab"] { font-weight: 700; }
+    div[data-testid="stMetric"] label {
+        font-size: 0.72rem !important; color: #64748b !important;
+        font-weight: 700 !important; letter-spacing: 0.06em !important;
+        text-transform: uppercase !important;
+    }
+    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+        font-size: 1.8rem !important; font-weight: 900 !important;
+        font-family: 'JetBrains Mono', monospace !important;
+    }
+
+    /* ── Buttons ── */
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
-        border: none !important; font-weight: 700 !important;
+        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%) !important;
+        background-size: 200% auto !important;
+        border: none !important; font-weight: 800 !important;
+        border-radius: 12px !important; letter-spacing: 0.02em !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 20px rgba(59,130,246,0.3) !important;
     }
     .stButton > button[kind="primary"]:hover {
-        background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+        background-position: right center !important;
+        box-shadow: 0 8px 30px rgba(59,130,246,0.4) !important;
+        transform: translateY(-1px) !important;
+    }
+    .stButton > button {
+        border-radius: 10px !important; font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+
+    /* ── Selectbox / inputs ── */
+    .stSelectbox > div > div, .stMultiSelect > div > div,
+    .stTextInput > div > div, .stTextArea > div > div {
+        border-radius: 10px !important;
+        border-color: rgba(255,255,255,0.08) !important;
+    }
+
+    /* ── Status containers ── */
+    .stAlert {
+        border-radius: 12px !important;
+        border-left-width: 3px !important;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(15,23,42,0.5); }
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #3b82f6, #8b5cf6);
+        border-radius: 3px;
+    }
+
+    /* ── Plotly chart backgrounds ── */
+    .js-plotly-plot .plotly .main-svg { border-radius: 14px; }
+
+    /* ── Stat number highlight ── */
+    .stat-number {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 900; font-size: 1.1rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -458,6 +681,67 @@ def _empty_state(icon: str, title: str, desc: str):
     """, unsafe_allow_html=True)
 
 
+def _score_gauge_svg(score: float, size: int = 100, label: str = ""):
+    """Render a circular SVG score gauge with gradient."""
+    r = (size - 10) / 2
+    circumference = 2 * 3.14159 * r
+    pct = max(0, min(100, score)) / 100
+    dash = circumference * pct
+    gap = circumference - dash
+    if score >= 80:
+        color = "#10b981"
+    elif score >= 60:
+        color = "#3b82f6"
+    elif score >= 40:
+        color = "#f59e0b"
+    else:
+        color = "#ef4444"
+    cx = cy = size / 2
+    label_html = f'<div style="font-size:0.6rem;color:#64748b;font-weight:700;margin-top:-4px">{label}</div>' if label else ""
+    return f"""
+    <div style="text-align:center">
+        <div class="score-gauge" style="width:{size}px;height:{size}px">
+            <svg width="{size}" height="{size}" viewBox="0 0 {size} {size}">
+                <circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="6"/>
+                <circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{color}" stroke-width="6"
+                        stroke-dasharray="{dash:.1f} {gap:.1f}" stroke-linecap="round"
+                        style="transition: stroke-dasharray 1s ease"/>
+            </svg>
+            <div class="gauge-val" style="font-size:{size*0.26}px;color:{color}">{score:.0f}</div>
+        </div>
+        {label_html}
+    </div>"""
+
+
+def _avatar(name: str):
+    """Generate avatar initials HTML."""
+    parts = name.strip().split()
+    initials = (parts[0][0] + (parts[-1][0] if len(parts) > 1 else "")).upper()
+    return f'<div class="avatar">{initials}</div>'
+
+
+def _candidate_card_header(name: str, score: float, grade: str, rank: int, meta: str = ""):
+    """Render a premium candidate card header."""
+    medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(rank, f"#{rank}")
+    grade_cl = _grade_css(grade)
+    return f"""
+    <div class="cand-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;align-items:center;gap:1rem">
+                {_avatar(name)}
+                <div>
+                    <div class="cand-name">{medal} {name}</div>
+                    <div class="cand-meta">{meta}</div>
+                </div>
+            </div>
+            <div style="text-align:right">
+                <div class="cand-score">{score:.1f}</div>
+                <span class="grade-pill {grade_cl}">{grade}</span>
+            </div>
+        </div>
+    </div>"""
+
+
 # ---------------------------------------------------------------------------
 # Navigation
 # ---------------------------------------------------------------------------
@@ -473,16 +757,25 @@ if _nav_target and _nav_target in PAGES:
 
 with st.sidebar:
     st.markdown("""
-    <div style="text-align:center; padding: 1.2rem 0 0.8rem 0;">
-        <div style="font-size:2.5rem; margin-bottom:0.3rem;">🔍</div>
-        <div style="font-size:1.3rem; font-weight:800; letter-spacing:-0.02em;
-                    background:linear-gradient(135deg,#38bdf8,#818cf8);
+    <div style="text-align:center; padding: 1.5rem 0 1rem 0;">
+        <div style="font-size:2.8rem; margin-bottom:0.2rem;
+                    filter: drop-shadow(0 4px 12px rgba(56,189,248,0.3));">🔍</div>
+        <div style="font-size:1.5rem; font-weight:900; letter-spacing:-0.03em;
+                    background:linear-gradient(135deg,#38bdf8 0%,#818cf8 50%,#a78bfa 100%);
+                    background-size:200% auto; animation: shimmer 3s linear infinite;
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
             TalentLens
         </div>
-        <div style="color:#475569; font-size:0.72rem; font-weight:600;
-                    letter-spacing:0.1em; text-transform:uppercase; margin-top:0.2rem;">
+        <div style="color:#475569; font-size:0.65rem; font-weight:700;
+                    letter-spacing:0.15em; text-transform:uppercase; margin-top:0.3rem;">
             See beyond the resume
+        </div>
+        <div style="margin-top:0.5rem;">
+            <span style="display:inline-block; background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(56,189,248,0.2));
+                         color:#a78bfa; padding:0.15rem 0.6rem; border-radius:12px; font-size:0.6rem;
+                         font-weight:800; letter-spacing:0.1em; border:1px solid rgba(139,92,246,0.3);">
+                PRO v3.0
+            </span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -527,8 +820,13 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("""
-    <div style="text-align:center; padding:0.5rem 0;">
-        <span style="color:#334155; font-size:0.7rem;">TalentLens v3.0 · 11 Agents · Heuristic Mode</span>
+    <div style="text-align:center; padding:0.8rem 0;">
+        <div style="color:#334155; font-size:0.65rem; font-weight:600; letter-spacing:0.05em;">
+            Built with 11 AI Agents
+        </div>
+        <div style="color:#1e293b; font-size:0.6rem; margin-top:0.2rem;">
+            TF-IDF · SBERT · Heuristic · NLP
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -537,9 +835,26 @@ with st.sidebar:
 # PAGE: WELCOME
 # =====================================================================
 if selected_page == "🏠 Welcome":
-    _hero("🔍 TalentLens",
-          "See beyond the resume — Multi-Agent Evaluation · Skills Matching · Verification · Interview Prep",
-          "11 SPECIALIST AGENTS")
+    # Premium hero with animated tagline
+    st.markdown("""
+    <div class="hero" style="padding:3rem 3.5rem; text-align:center;">
+        <div style="font-size:3.5rem; margin-bottom:0.5rem;
+                    filter:drop-shadow(0 8px 24px rgba(56,189,248,0.3));">🔍</div>
+        <h1 style="font-size:3rem; text-align:center;
+                   background:linear-gradient(135deg,#38bdf8 0%,#818cf8 40%,#a78bfa 70%,#06b6d4 100%);
+                   background-size:200% auto; animation:shimmer 4s linear infinite;
+                   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+                   background-clip:text;">TalentLens</h1>
+        <p class="subtitle" style="font-size:1.1rem; text-align:center; max-width:600px; margin:0.8rem auto 0;">
+            Multi-Agent AI Resume Screening · Skills Matching · Background Verification · Interview Generation
+        </p>
+        <div style="display:flex; justify-content:center; gap:0.6rem; margin-top:1rem; flex-wrap:wrap;">
+            <span class="badge">11 SPECIALIST AGENTS</span>
+            <span class="badge" style="color:#10b981; background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3);">TF-IDF + SBERT SCORING</span>
+            <span class="badge" style="color:#f59e0b; background:rgba(245,158,11,0.15); border-color:rgba(245,158,11,0.3);">HEURISTIC NLP</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Session recovery banner
     if _had_saved_session and st.session_state.pipeline_completed:
@@ -623,19 +938,55 @@ if selected_page == "🏠 Welcome":
     # Quick navigation
     st.markdown("")
     st.markdown('<div class="sec-header green">⚡ Quick Start</div>', unsafe_allow_html=True)
-    qc1, qc2, qc3 = st.columns(3)
+    qc1, qc2, qc3, qc4 = st.columns(4)
     with qc1:
         if st.button("📄 Create a JD", use_container_width=True):
-            st.session_state.current_page = "📄 JD Management"
+            st.session_state.auto_navigate_to = "📄 JD Management"
             st.rerun()
     with qc2:
         if st.button("🔍 Start Screening", type="primary", use_container_width=True):
-            st.session_state.current_page = "🔍 Screening"
+            st.session_state.auto_navigate_to = "🔍 Screening"
             st.rerun()
     with qc3:
         if st.button("📅 View History", use_container_width=True):
-            st.session_state.current_page = "📅 History"
+            st.session_state.auto_navigate_to = "📅 History"
             st.rerun()
+    with qc4:
+        if st.button("📈 Analytics", use_container_width=True):
+            st.session_state.auto_navigate_to = "📈 Analytics"
+            st.rerun()
+
+    # Tech stack showcase
+    st.markdown("")
+    st.markdown('<div class="sec-header cyan">🧬 Technology Stack</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:2rem;">
+        <span style="background:rgba(59,130,246,0.12); color:#60a5fa; padding:0.3rem 0.8rem;
+                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(59,130,246,0.2);
+                     font-family:'JetBrains Mono',monospace;">Python 3.14</span>
+        <span style="background:rgba(239,68,68,0.12); color:#f87171; padding:0.3rem 0.8rem;
+                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(239,68,68,0.2);
+                     font-family:'JetBrains Mono',monospace;">Streamlit</span>
+        <span style="background:rgba(16,185,129,0.12); color:#34d399; padding:0.3rem 0.8rem;
+                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(16,185,129,0.2);
+                     font-family:'JetBrains Mono',monospace;">TF-IDF</span>
+        <span style="background:rgba(139,92,246,0.12); color:#a78bfa; padding:0.3rem 0.8rem;
+                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(139,92,246,0.2);
+                     font-family:'JetBrains Mono',monospace;">SBERT</span>
+        <span style="background:rgba(245,158,11,0.12); color:#fbbf24; padding:0.3rem 0.8rem;
+                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(245,158,11,0.2);
+                     font-family:'JetBrains Mono',monospace;">Plotly</span>
+        <span style="background:rgba(6,182,212,0.12); color:#22d3ee; padding:0.3rem 0.8rem;
+                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(6,182,212,0.2);
+                     font-family:'JetBrains Mono',monospace;">SQLite</span>
+        <span style="background:rgba(236,72,153,0.12); color:#f472b6; padding:0.3rem 0.8rem;
+                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(236,72,153,0.2);
+                     font-family:'JetBrains Mono',monospace;">NLP Pipeline</span>
+        <span style="background:rgba(168,85,247,0.12); color:#c084fc; padding:0.3rem 0.8rem;
+                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(168,85,247,0.2);
+                     font-family:'JetBrains Mono',monospace;">Multi-Agent AI</span>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # =====================================================================
@@ -1185,12 +1536,24 @@ elif selected_page == "📊 Results":
         # Overview metrics
         st.markdown('<div class="sec-header">📊 Screening Overview</div>', unsafe_allow_html=True)
         top = scores[0]
+        avg_sc = sum(s.overall_score for s in scores)/len(scores)
+        a_count = sum(1 for s in scores if s.grade.startswith("A"))
+
         ov1, ov2, ov3, ov4, ov5 = st.columns(5)
-        with ov1: st.metric("Total", len(scores))
-        with ov2: st.metric("Avg Score", f"{sum(s.overall_score for s in scores)/len(scores):.1f}")
-        with ov3: st.metric("A/A+ Grades", sum(1 for s in scores if s.grade.startswith("A")))
-        with ov4: st.metric("🏆 Top", top.candidate.name[:20])
-        with ov5: st.metric("Top Score", f"{top.overall_score:.1f}")
+        with ov1:
+            st.markdown(_score_gauge_svg(len(scores), size=90, label="TOTAL"), unsafe_allow_html=True)
+        with ov2:
+            st.markdown(_score_gauge_svg(avg_sc, size=90, label="AVG SCORE"), unsafe_allow_html=True)
+        with ov3:
+            st.markdown(_score_gauge_svg(a_count / max(len(scores), 1) * 100, size=90, label="A/A+ RATE"), unsafe_allow_html=True)
+        with ov4:
+            st.markdown(f"""<div style="text-align:center">
+                <div style="font-size:2rem;margin-top:0.5rem">🏆</div>
+                <div style="font-size:0.95rem;font-weight:900;color:#f1f5f9;margin-top:0.2rem">{top.candidate.name[:18]}</div>
+                <div style="font-size:0.65rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.08em">TOP CANDIDATE</div>
+            </div>""", unsafe_allow_html=True)
+        with ov5:
+            st.markdown(_score_gauge_svg(top.overall_score, size=90, label="TOP SCORE"), unsafe_allow_html=True)
 
         # Rankings table
         st.markdown('<div class="sec-header green">🏆 Candidate Rankings</div>', unsafe_allow_html=True)
@@ -1247,7 +1610,10 @@ elif selected_page == "📊 Results":
         st.markdown('<div class="sec-header">👤 Candidate Details</div>', unsafe_allow_html=True)
         for s in scores:
             medal = "🥇" if s.rank == 1 else "🥈" if s.rank == 2 else "🥉" if s.rank == 3 else f"#{s.rank}"
-            with st.expander(f"{medal}  {s.candidate.name}  ·  {s.overall_score:.1f}/100  ·  {s.grade}", expanded=(s.rank == 1)):
+            # Premium card header
+            meta = f"{s.candidate.total_experience_years:.1f}y exp · {s.candidate.location or 'Unknown'}"
+            st.markdown(_candidate_card_header(s.candidate.name, s.overall_score, s.grade, s.rank, meta), unsafe_allow_html=True)
+            with st.expander(f"📋 View full details for {s.candidate.name}", expanded=(s.rank == 1)):
                 ic1, ic2, ic3 = st.columns(3)
                 with ic1:
                     st.markdown(f"📧 {s.candidate.email or 'N/A'}")
@@ -1375,16 +1741,24 @@ elif selected_page == "🤖 Agent Panel":
         if selected_candidate and selected_candidate in agent_results:
             consensus: ConsensusResult = agent_results[selected_candidate]
 
-            # Consensus cards
+            # Consensus cards — premium gauges
             cc1, cc2, cc3, cc4 = st.columns(4)
             with cc1:
-                st.markdown(_glass_metric(f"{consensus.consensus_score:.0f}", "Consensus Score"), unsafe_allow_html=True)
+                st.markdown(_score_gauge_svg(consensus.consensus_score, size=110, label="CONSENSUS"), unsafe_allow_html=True)
             with cc2:
-                st.markdown(f'<div class="glass-card"><div class="value" style="color:{_grade_color(consensus.consensus_grade)}">{consensus.consensus_grade}</div><div class="label">Grade</div></div>', unsafe_allow_html=True)
+                _gc = _grade_color(consensus.consensus_grade)
+                st.markdown(f"""<div class="glass-card">
+                    <div class="value" style="-webkit-text-fill-color:{_gc};background:none;font-size:3rem">{consensus.consensus_grade}</div>
+                    <div class="label">Grade</div>
+                </div>""", unsafe_allow_html=True)
             with cc3:
-                st.markdown(f'<div class="glass-card"><div class="value" style="font-size:1.3rem;color:{_rec_color(consensus.consensus_recommendation)}">{consensus.consensus_recommendation}</div><div class="label">Recommendation</div></div>', unsafe_allow_html=True)
+                _rc = _rec_color(consensus.consensus_recommendation)
+                st.markdown(f"""<div class="glass-card">
+                    <div class="value" style="-webkit-text-fill-color:{_rc};background:none;font-size:1.2rem">{consensus.consensus_recommendation}</div>
+                    <div class="label">Recommendation</div>
+                </div>""", unsafe_allow_html=True)
             with cc4:
-                st.markdown(_glass_metric(f"{consensus.confidence:.0%}", "Confidence"), unsafe_allow_html=True)
+                st.markdown(_score_gauge_svg(consensus.confidence * 100, size=110, label="CONFIDENCE"), unsafe_allow_html=True)
 
             st.markdown("")
             st.markdown(consensus.summary)
@@ -1432,9 +1806,15 @@ elif selected_page == "🤖 Agent Panel":
                 name=selected_candidate,
             ))
             fig_agent.update_layout(
-                polar=dict(radialaxis=dict(visible=True, range=[0, 100], tickfont=dict(size=9))),
+                polar=dict(
+                    radialaxis=dict(visible=True, range=[0, 100], tickfont=dict(size=9, color="#475569"),
+                                    gridcolor="rgba(255,255,255,0.05)"),
+                    angularaxis=dict(gridcolor="rgba(255,255,255,0.05)"),
+                    bgcolor="rgba(0,0,0,0)",
+                ),
                 template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)",
                 height=420, margin=dict(l=90, r=90, t=30, b=30),
+                font=dict(family="Inter, sans-serif"),
             )
             st.plotly_chart(fig_agent, use_container_width=True)
 
