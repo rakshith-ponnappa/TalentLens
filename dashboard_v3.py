@@ -35,7 +35,7 @@ from jd_analyzer import analyze_jd
 from resume_parser import parse_resume
 from scorer import score_candidate, rank_candidates, compute_skill_gap
 from verifier import run_verification
-from agents import evaluate_candidate, ConsensusResult
+from agents import evaluate_candidate, ConsensusResult, AGENT_CATALOGUE
 from history import (
     save_session, get_all_sessions, get_candidates_for_session,
     get_all_candidates, get_stats_summary, get_candidate_history,
@@ -967,6 +967,42 @@ elif selected_page == "🔍 Screening":
         w_cert = st.slider("Certifications", 0, 20, 10, key="w_cert")
         w_sem = st.slider("Semantic Match", 0, 20, 5, key="w_sem")
 
+    # Agent selection
+    selected_agent_names = None
+    if run_agents:
+        st.markdown('<div class="sec-header cyan">🤖 Step 3b — Select Agents</div>', unsafe_allow_html=True)
+        _all_agent_names = [a["name"] for a in AGENT_CATALOGUE]
+
+        agent_preset = st.radio(
+            "Agent preset:",
+            ["All 11 Agents", "Technical Only", "Cloud & AWS Only", "People Only", "Custom"],
+            horizontal=True, key="agent_preset",
+        )
+
+        if agent_preset == "All 11 Agents":
+            selected_agent_names = None  # None = all
+        elif agent_preset == "Technical Only":
+            selected_agent_names = [a["name"] for a in AGENT_CATALOGUE if a["group"] == "Software & Architecture"]
+        elif agent_preset == "Cloud & AWS Only":
+            selected_agent_names = [a["name"] for a in AGENT_CATALOGUE if a["group"] == "Cloud & AWS"]
+        elif agent_preset == "People Only":
+            selected_agent_names = [a["name"] for a in AGENT_CATALOGUE if a["group"] == "People & Hiring"]
+        else:
+            selected_agent_names = st.multiselect(
+                "Select agents:",
+                options=_all_agent_names,
+                default=_all_agent_names,
+                key="custom_agents",
+            )
+            if not selected_agent_names:
+                st.warning("⚠️ Select at least one agent.")
+
+        # Show selected agents summary
+        if selected_agent_names:
+            _sel_catalogue = [a for a in AGENT_CATALOGUE if a["name"] in selected_agent_names]
+            _total_w = sum(a["weight"] for a in _sel_catalogue)
+            st.caption(f"✅ {len(selected_agent_names)} agent(s) selected · raw weight sum: {_total_w:.0%} (will be renormalised to 100%)")
+
     # Step 4: Run
     st.markdown('<div class="sec-header yellow">🚀 Step 4 — Run Screening</div>', unsafe_allow_html=True)
     run_btn = st.button("🚀 Screen Candidates", type="primary", use_container_width=True)
@@ -1079,7 +1115,8 @@ elif selected_page == "🔍 Screening":
             for i, s in enumerate(ranked):
                 try:
                     agent_results[s.candidate.name] = evaluate_candidate(
-                        s.candidate, jd, s, s.verification)
+                        s.candidate, jd, s, s.verification,
+                        selected_agents=selected_agent_names)
                 except Exception as e:
                     st.warning(f"⚠️ Agent eval failed for {s.candidate.name}: {e}")
                 progress.progress((i + 1) / len(ranked), text=f"✅ {s.candidate.name}")
@@ -1541,40 +1578,45 @@ elif selected_page == "📅 History":
 # =====================================================================
 elif selected_page == "📈 Analytics":
     _hero("📈 Screening Analytics",
-          "Aggregate statistics · Trends · Grade distributions")
+          "Aggregate statistics · Trends · Grade distributions · Skills heatmap")
 
     try:
         stats = get_stats_summary()
     except Exception:
-        stats = {"total_sessions": 0, "total_candidates": 0, "avg_score": 0,
-                 "top_candidate": None, "grade_distribution": {}, "monthly_trend": []}
+        stats = {"total_sessions": 0, "total_candidates": 0, "unique_candidates": 0,
+                 "avg_score": 0, "top_candidate": None, "grade_distribution": {},
+                 "monthly_trend": [], "pass_rate": 0, "top_demanded_skills": [],
+                 "top_missing_skills": [], "top_matched_skills": []}
 
-    ac1, ac2, ac3, ac4 = st.columns(4)
+    # Row 1: Key metrics (6 cols now)
+    ac1, ac2, ac3, ac4, ac5, ac6 = st.columns(6)
     with ac1:
-        st.markdown(_glass_metric(stats["total_sessions"], "Total Sessions"), unsafe_allow_html=True)
+        st.markdown(_glass_metric(stats["total_sessions"], "Sessions", "screening runs"), unsafe_allow_html=True)
     with ac2:
-        st.markdown(_glass_metric(stats["total_candidates"], "Total Candidates"), unsafe_allow_html=True)
+        st.markdown(_glass_metric(stats["total_candidates"], "Candidates", "total scans"), unsafe_allow_html=True)
     with ac3:
-        st.markdown(_glass_metric(f'{stats["avg_score"]:.1f}' if stats["avg_score"] else "0", "Avg Score"), unsafe_allow_html=True)
+        st.markdown(_glass_metric(stats.get("unique_candidates", "—"), "Unique", "distinct names"), unsafe_allow_html=True)
     with ac4:
+        st.markdown(_glass_metric(f'{stats["avg_score"]:.1f}' if stats["avg_score"] else "0", "Avg Score", "out of 100"), unsafe_allow_html=True)
+    with ac5:
+        st.markdown(_glass_metric(f'{stats.get("pass_rate", 0)}%', "Pass Rate", "score ≥ 70"), unsafe_allow_html=True)
+    with ac6:
         top_c = stats.get("top_candidate")
+        top_name = "N/A"
         if isinstance(top_c, dict):
             top_name = top_c.get("name", "N/A")
         elif top_c is not None:
             try:
                 top_name = dict(top_c).get("name", "N/A")
             except Exception:
-                top_name = "N/A"
-        else:
-            top_name = "N/A"
-        st.markdown(_glass_metric(top_name[:18], "All-Time Top"), unsafe_allow_html=True)
+                pass
+        st.markdown(_glass_metric(top_name[:16], "All-Time Top"), unsafe_allow_html=True)
 
     st.markdown("")
 
-    # Charts side by side
+    # Row 2: Charts — Grade distribution + Monthly trend
     ch1, ch2 = st.columns(2)
 
-    # Grade distribution
     grade_dist = stats.get("grade_distribution", {})
     with ch1:
         st.markdown('<div class="sec-header">📊 Grade Distribution</div>', unsafe_allow_html=True)
@@ -1594,7 +1636,6 @@ elif selected_page == "📈 Analytics":
         else:
             st.info("No grade data yet.")
 
-    # Monthly trend
     monthly = stats.get("monthly_trend", [])
     with ch2:
         st.markdown('<div class="sec-header purple">📈 Monthly Trend</div>', unsafe_allow_html=True)
@@ -1619,8 +1660,123 @@ elif selected_page == "📈 Analytics":
         else:
             st.info("No trend data yet.")
 
-    # All candidates table
-    st.markdown('<div class="sec-header green">📋 All Scanned Candidates</div>', unsafe_allow_html=True)
+    st.markdown("")
+
+    # Row 3: Skills Heatmap — Demanded vs Matched vs Missing
+    st.markdown('<div class="sec-header cyan">🔥 Skills Heatmap</div>', unsafe_allow_html=True)
+    top_demanded = stats.get("top_demanded_skills", [])
+    top_matched = stats.get("top_matched_skills", [])
+    top_missing = stats.get("top_missing_skills", [])
+
+    if top_demanded or top_matched or top_missing:
+        sk1, sk2, sk3 = st.columns(3)
+        with sk1:
+            st.markdown("**📋 Most Demanded**")
+            if top_demanded:
+                _sk_names = [s[0].title() for s in top_demanded[:10]]
+                _sk_counts = [s[1] for s in top_demanded[:10]]
+                fig_dem = go.Figure(go.Bar(x=_sk_counts, y=_sk_names, orientation="h",
+                                            marker_color="#3b82f6", text=_sk_counts, textposition="auto"))
+                fig_dem.update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)",
+                                       plot_bgcolor="rgba(0,0,0,0)", height=300,
+                                       margin=dict(l=10, r=10, t=10, b=10), yaxis=dict(autorange="reversed"))
+                st.plotly_chart(fig_dem, use_container_width=True)
+            else:
+                st.caption("No JD data yet.")
+        with sk2:
+            st.markdown("**✅ Most Matched**")
+            if top_matched:
+                _sk_names = [s[0].title() for s in top_matched[:10]]
+                _sk_counts = [s[1] for s in top_matched[:10]]
+                fig_mat = go.Figure(go.Bar(x=_sk_counts, y=_sk_names, orientation="h",
+                                            marker_color="#10b981", text=_sk_counts, textposition="auto"))
+                fig_mat.update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)",
+                                       plot_bgcolor="rgba(0,0,0,0)", height=300,
+                                       margin=dict(l=10, r=10, t=10, b=10), yaxis=dict(autorange="reversed"))
+                st.plotly_chart(fig_mat, use_container_width=True)
+            else:
+                st.caption("No match data yet.")
+        with sk3:
+            st.markdown("**❌ Most Missing**")
+            if top_missing:
+                _sk_names = [s[0].title() for s in top_missing[:10]]
+                _sk_counts = [s[1] for s in top_missing[:10]]
+                fig_mis = go.Figure(go.Bar(x=_sk_counts, y=_sk_names, orientation="h",
+                                            marker_color="#ef4444", text=_sk_counts, textposition="auto"))
+                fig_mis.update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)",
+                                       plot_bgcolor="rgba(0,0,0,0)", height=300,
+                                       margin=dict(l=10, r=10, t=10, b=10), yaxis=dict(autorange="reversed"))
+                st.plotly_chart(fig_mis, use_container_width=True)
+            else:
+                st.caption("No gap data yet.")
+    else:
+        st.info("Run screenings to generate skills heatmap data.")
+
+    st.markdown("")
+
+    # Row 4: Agent Analytics (from current session)
+    st.markdown('<div class="sec-header green">🤖 Agent Analytics</div>', unsafe_allow_html=True)
+    _current_agent_results = st.session_state.agent_results
+    if _current_agent_results:
+        # Build per-agent score table across all candidates in current session
+        _agent_score_map = {}  # {agent_name: [scores]}
+        _agent_rec_map = {}    # {agent_name: {rec: count}}
+        for cand_name, consensus in _current_agent_results.items():
+            if hasattr(consensus, "evaluations"):
+                for ev in consensus.evaluations:
+                    _agent_score_map.setdefault(ev.agent_name, []).append(ev.score)
+                    _agent_rec_map.setdefault(ev.agent_name, {})
+                    _agent_rec_map[ev.agent_name][ev.recommendation] = _agent_rec_map[ev.agent_name].get(ev.recommendation, 0) + 1
+
+        if _agent_score_map:
+            ag1, ag2 = st.columns(2)
+            with ag1:
+                st.markdown("**Agent Avg Scores (Current Session)**")
+                _agent_names = list(_agent_score_map.keys())
+                _agent_avgs = [round(sum(v)/len(v), 1) for v in _agent_score_map.values()]
+                _colors = ["#ef4444" if a < 50 else "#f59e0b" if a < 70 else "#10b981" for a in _agent_avgs]
+                fig_ag = go.Figure(go.Bar(
+                    x=_agent_avgs, y=_agent_names, orientation="h",
+                    marker_color=_colors, text=_agent_avgs, textposition="auto",
+                ))
+                fig_ag.update_layout(template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)",
+                                      plot_bgcolor="rgba(0,0,0,0)", height=350,
+                                      margin=dict(l=10, r=10, t=10, b=10), yaxis=dict(autorange="reversed"))
+                st.plotly_chart(fig_ag, use_container_width=True)
+            with ag2:
+                st.markdown("**Agent Recommendation Distribution**")
+                _rec_rows = []
+                for aname, recs in _agent_rec_map.items():
+                    for rec, cnt in recs.items():
+                        _rec_rows.append({"Agent": aname, "Recommendation": rec, "Count": cnt})
+                if _rec_rows:
+                    _rec_df = pd.DataFrame(_rec_rows)
+                    _pivot = _rec_df.pivot_table(index="Agent", columns="Recommendation",
+                                                  values="Count", fill_value=0, aggfunc="sum")
+                    _rec_order = ["Strong Hire", "Hire", "Lean Hire", "No Hire"]
+                    _rec_colors = {"Strong Hire": "#10b981", "Hire": "#3b82f6", "Lean Hire": "#f59e0b", "No Hire": "#ef4444"}
+                    fig_rec = go.Figure()
+                    for rec in _rec_order:
+                        if rec in _pivot.columns:
+                            fig_rec.add_trace(go.Bar(
+                                y=_pivot.index, x=_pivot[rec], name=rec,
+                                orientation="h", marker_color=_rec_colors.get(rec, "#94a3b8"),
+                            ))
+                    fig_rec.update_layout(
+                        barmode="stack", template="plotly_dark",
+                        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                        height=350, margin=dict(l=10, r=10, t=10, b=10),
+                        yaxis=dict(autorange="reversed"),
+                        legend=dict(orientation="h", y=-0.15, font=dict(size=10)),
+                    )
+                    st.plotly_chart(fig_rec, use_container_width=True)
+    else:
+        st.info("Run a screening session to see per-agent analytics here.")
+
+    st.markdown("")
+
+    # Row 5: All candidates table
+    st.markdown('<div class="sec-header yellow">📋 All Scanned Candidates</div>', unsafe_allow_html=True)
     try:
         all_cands = get_all_candidates()
     except Exception:

@@ -324,7 +324,9 @@ def get_stats_summary() -> dict:
     try:
         sess_count = conn.execute("SELECT COUNT(*) FROM sessions").fetchone()[0]
         cand_count = conn.execute("SELECT COUNT(*) FROM candidates").fetchone()[0]
+        # Weighted average: compute from individual candidate scores (not session averages)
         avg_score = conn.execute("SELECT AVG(overall_score) FROM candidates").fetchone()[0] or 0.0
+        unique_cands = conn.execute("SELECT COUNT(DISTINCT LOWER(TRIM(name))) FROM candidates").fetchone()[0]
         top_row = conn.execute(
             "SELECT name, overall_score FROM candidates ORDER BY overall_score DESC LIMIT 1"
         ).fetchone()
@@ -333,26 +335,74 @@ def get_stats_summary() -> dict:
         for row in conn.execute("SELECT grade, COUNT(*) FROM candidates GROUP BY grade").fetchall():
             grade_dist[row[0]] = row[1]
 
+        # Monthly trend — derive from candidates table directly for accuracy
         monthly = []
         for row in conn.execute(
-            """SELECT strftime('%Y-%m', created_at) as month,
-                      COUNT(*) as sessions,
-                      SUM(total_candidates) as candidates,
-                      AVG(avg_score) as avg_score
-               FROM sessions
+            """SELECT strftime('%Y-%m', c.scanned_at) as month,
+                      COUNT(DISTINCT c.session_id) as sessions,
+                      COUNT(*) as candidates,
+                      ROUND(AVG(c.overall_score), 1) as avg_score
+               FROM candidates c
                GROUP BY month
                ORDER BY month DESC
                LIMIT 12"""
         ).fetchall():
             monthly.append(dict(row))
 
+        # Pass-through rates
+        hire_count = conn.execute(
+            "SELECT COUNT(*) FROM candidates WHERE overall_score >= 70"
+        ).fetchone()[0]
+        pass_rate = round(hire_count / max(cand_count, 1) * 100, 1)
+
+        # Top skills demanded (from sessions JD data)
+        skill_demand = {}
+        for row in conn.execute("SELECT jd_data FROM sessions").fetchall():
+            try:
+                jd = json.loads(row[0])
+                for sk in jd.get("required_skills", []):
+                    sk_lower = sk.lower().strip()
+                    skill_demand[sk_lower] = skill_demand.get(sk_lower, 0) + 1
+            except (json.JSONDecodeError, TypeError):
+                pass
+        top_demanded = sorted(skill_demand.items(), key=lambda x: x[1], reverse=True)[:15]
+
+        # Top missing skills (from candidates)
+        skill_missing = {}
+        for row in conn.execute("SELECT missing_required FROM candidates").fetchall():
+            try:
+                missing = json.loads(row[0])
+                for sk in missing:
+                    sk_lower = sk.lower().strip()
+                    skill_missing[sk_lower] = skill_missing.get(sk_lower, 0) + 1
+            except (json.JSONDecodeError, TypeError):
+                pass
+        top_missing = sorted(skill_missing.items(), key=lambda x: x[1], reverse=True)[:15]
+
+        # Top matched skills
+        skill_matched = {}
+        for row in conn.execute("SELECT matched_required FROM candidates").fetchall():
+            try:
+                matched = json.loads(row[0])
+                for sk in matched:
+                    sk_lower = sk.lower().strip()
+                    skill_matched[sk_lower] = skill_matched.get(sk_lower, 0) + 1
+            except (json.JSONDecodeError, TypeError):
+                pass
+        top_matched = sorted(skill_matched.items(), key=lambda x: x[1], reverse=True)[:15]
+
         return {
             "total_sessions": sess_count,
             "total_candidates": cand_count,
+            "unique_candidates": unique_cands,
             "avg_score": round(avg_score, 1),
             "top_candidate": dict(top_row) if top_row else None,
             "grade_distribution": grade_dist,
             "monthly_trend": monthly,
+            "pass_rate": pass_rate,
+            "top_demanded_skills": top_demanded,
+            "top_missing_skills": top_missing,
+            "top_matched_skills": top_matched,
         }
     finally:
         conn.close()
