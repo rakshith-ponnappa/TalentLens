@@ -1011,19 +1011,44 @@ _ALL_AGENTS = [
     RecruitingEngineerAgent(),
 ]
 
+# Public catalogue for UI agent picker
+AGENT_CATALOGUE = [
+    {"name": a.name, "persona": a.persona, "weight": a.weight,
+     "group": "Cloud & AWS" if any(k in a.name for k in ("Cloud", "AWS", "Migration"))
+              else "People & Hiring" if a.name in ("HR Manager", "Recruiting Engineer")
+              else "Software & Architecture"}
+    for a in _ALL_AGENTS
+]
+
 
 def evaluate_candidate(
     candidate: CandidateProfile,
     jd: JDCriteria,
     score: CandidateScore,
     verification: Optional[VerificationResults] = None,
+    selected_agents: Optional[list[str]] = None,
 ) -> ConsensusResult:
-    """Run all agent evaluations and synthesise a consensus."""
+    """Run agent evaluations and synthesise a consensus.
+
+    Args:
+        selected_agents: Optional list of agent names to run.  If *None* or
+            empty, all 11 agents are evaluated.  When a subset is provided
+            only those agents participate and weights are renormalised.
+    """
+    if selected_agents:
+        agents_to_run = [a for a in _ALL_AGENTS if a.name in selected_agents]
+    else:
+        agents_to_run = list(_ALL_AGENTS)
+
+    # Renormalise weights so they still sum to 1.0 when a subset is used
+    raw_weight_sum = sum(a.weight for a in agents_to_run)
+    weight_scale = 1.0 / max(raw_weight_sum, 0.01)
+
     evaluations: list[AgentEvaluation] = []
     discussion: list[AgentDiscussion] = []
 
     # --- Round 1: Independent evaluations ---
-    for agent in _ALL_AGENTS:
+    for agent in agents_to_run:
         ev = agent.evaluate(candidate, jd, score, verification)
         evaluations.append(ev)
         discussion.append(AgentDiscussion(
@@ -1158,9 +1183,9 @@ def evaluate_candidate(
         ))
 
     # --- Round 3: Consensus ---
-    # Weighted average
-    total_weight = sum(ev.weight for ev in evaluations)
-    consensus_score = sum(ev.score * ev.weight for ev in evaluations) / max(total_weight, 0.01)
+    # Weighted average (renormalised for subset)
+    total_weight = sum(ev.weight for ev in evaluations) * weight_scale
+    consensus_score = sum(ev.score * ev.weight * weight_scale for ev in evaluations) / max(total_weight, 0.01)
     consensus_score = round(consensus_score, 1)
 
     # Confidence = inverse of score variance (higher agreement = higher confidence)
