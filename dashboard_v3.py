@@ -58,117 +58,99 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
-# Custom CSS — premium futuristic dark theme
+# Custom CSS — premium futuristic theme with aurora effects
 # ---------------------------------------------------------------------------
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
-    html, body, [class*="css"] {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
+    html, body, [class*="css"] { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
 
-    /* ── Animated noise grain overlay ── */
-    .stApp::before {
-        content: '';
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
-        pointer-events: none; z-index: 0; opacity: 0.4;
-    }
-
-    /* ── Global background ── */
-    .stApp {
-        background: linear-gradient(165deg, #050816 0%, #0a0e27 25%, #0d1333 50%, #080c20 75%, #030712 100%);
-    }
-
-    /* ── Keyframe animations ── */
-    @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+    /* ── KEYFRAME ANIMATIONS ── */
+    @keyframes aurora {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
     }
     @keyframes shimmer {
         0% { background-position: -200% center; }
         100% { background-position: 200% center; }
     }
+    @keyframes pulse-ring {
+        0% { box-shadow: 0 0 0 0 rgba(56,189,248,0.4); }
+        70% { box-shadow: 0 0 0 8px rgba(56,189,248,0); }
+        100% { box-shadow: 0 0 0 0 rgba(56,189,248,0); }
+    }
     @keyframes float {
-        0%, 100% { transform: translateY(0); }
+        0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-6px); }
     }
-    @keyframes pulse-glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(56,189,248,0.1); }
-        50% { box-shadow: 0 0 40px rgba(56,189,248,0.25); }
+    @keyframes glow-border {
+        0%, 100% { border-color: rgba(56,189,248,0.2); }
+        50% { border-color: rgba(139,92,246,0.4); }
     }
-    @keyframes gradient-shift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    @keyframes borderShine {
-        0% { border-color: rgba(56,189,248,0.1); }
-        50% { border-color: rgba(139,92,246,0.3); }
-        100% { border-color: rgba(56,189,248,0.1); }
+    @keyframes score-fill {
+        from { stroke-dashoffset: 283; }
     }
 
-    /* ── Hero header ── */
+    /* ── HERO — full-width aurora gradient ── */
     .hero {
-        background: linear-gradient(135deg, #0c1024 0%, #131a3d 30%, #1a1145 60%, #0f0c29 100%);
+        background: linear-gradient(135deg, #0a0a1a 0%, #0d1033 25%, #1a0a2e 50%, #0d1033 75%, #0a0a1a 100%);
+        background-size: 300% 300%;
+        animation: aurora 8s ease infinite;
         padding: 2.5rem 3rem; border-radius: 20px; margin-bottom: 2rem;
-        border: 1px solid rgba(139,92,246,0.15);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.05);
+        box-shadow: 0 0 60px rgba(56,189,248,0.06), 0 0 120px rgba(139,92,246,0.04);
         position: relative; overflow: hidden;
-        animation: fadeInUp 0.6s ease-out;
     }
     .hero::before {
         content: ''; position: absolute; top: -60%; right: -15%;
         width: 500px; height: 500px;
-        background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, rgba(56,189,248,0.06) 40%, transparent 70%);
-        pointer-events: none; animation: float 8s ease-in-out infinite;
+        background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, rgba(139,92,246,0.05) 40%, transparent 70%);
+        pointer-events: none; animation: float 6s ease-in-out infinite;
     }
     .hero::after {
         content: ''; position: absolute; bottom: -40%; left: -10%;
         width: 400px; height: 400px;
-        background: radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 60%);
-        pointer-events: none;
+        background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 60%);
+        pointer-events: none; animation: float 8s ease-in-out infinite reverse;
     }
     .hero h1 {
         color: #f1f5f9; font-size: 2.2rem; font-weight: 900; margin: 0;
-        letter-spacing: -0.03em; position: relative;
+        letter-spacing: -0.03em; position: relative; z-index: 1;
     }
     .hero .subtitle {
         color: #94a3b8; margin: 0.5rem 0 0 0; font-size: 0.95rem;
-        font-weight: 400; letter-spacing: 0.01em; position: relative;
+        font-weight: 400; line-height: 1.6; position: relative; z-index: 1;
     }
     .hero .badge {
-        display: inline-block;
-        background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(56,189,248,0.2));
-        color: #a78bfa; padding: 0.25rem 0.9rem; border-radius: 20px;
+        display: inline-block; padding: 0.25rem 0.8rem; border-radius: 20px;
         font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
-        margin-top: 0.7rem; border: 1px solid rgba(139,92,246,0.3);
-        text-transform: uppercase; position: relative;
+        margin-top: 0.7rem; position: relative; z-index: 1;
+        background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(139,92,246,0.15));
+        color: #a5b4fc; border: 1px solid rgba(139,92,246,0.25);
     }
 
-    /* ── Glass metric cards ── */
+    /* ── GLASS METRIC CARDS — premium with glow ── */
     .glass-card {
-        background: linear-gradient(145deg, rgba(15,23,42,0.8), rgba(30,41,59,0.4));
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255,255,255,0.06); border-radius: 18px;
-        padding: 1.6rem; text-align: center;
+        background: linear-gradient(145deg, rgba(15,23,42,0.8), rgba(30,41,59,0.6));
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255,255,255,0.06); border-radius: 20px;
+        padding: 1.6rem 1.2rem; text-align: center;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative; overflow: hidden;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.2);
     }
     .glass-card::before {
         content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        background: linear-gradient(90deg, transparent, rgba(56,189,248,0.3), rgba(139,92,246,0.3), transparent);
     }
     .glass-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 30px rgba(56,189,248,0.08);
-        border-color: rgba(56,189,248,0.2);
+        border-color: rgba(56,189,248,0.15);
     }
     .glass-card .value {
         font-size: 2.6rem; font-weight: 900; letter-spacing: -0.03em;
-        background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #a78bfa 100%);
+        background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
         background-size: 200% auto; animation: shimmer 3s linear infinite;
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -177,267 +159,254 @@ st.markdown("""
         font-size: 0.72rem; color: #64748b; text-transform: uppercase;
         letter-spacing: 0.1em; margin-top: 0.4rem; font-weight: 700;
     }
-    .glass-card .sublabel {
-        font-size: 0.68rem; color: #475569; margin-top: 0.15rem; font-weight: 500;
+    .glass-card .sublabel { font-size: 0.68rem; color: #475569; margin-top: 0.2rem; }
+
+    /* ── NEON SCORE RING ── */
+    .score-ring {
+        position: relative; width: 120px; height: 120px; margin: 0 auto;
+    }
+    .score-ring svg { transform: rotate(-90deg); }
+    .score-ring .ring-bg { stroke: rgba(255,255,255,0.05); fill: none; stroke-width: 8; }
+    .score-ring .ring-fill { fill: none; stroke-width: 8; stroke-linecap: round;
+        animation: score-fill 1.5s ease-out forwards; }
+    .score-ring .ring-value {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        font-size: 1.8rem; font-weight: 900; color: #f1f5f9;
+    }
+    .score-ring .ring-label {
+        position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%);
+        font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.08em; white-space: nowrap;
     }
 
-    /* ── Feature cards (Welcome) ── */
+    /* ── CANDIDATE CARD — premium glassmorphism ── */
+    .cand-card {
+        background: linear-gradient(145deg, rgba(15,23,42,0.9), rgba(30,41,59,0.7));
+        border: 1px solid rgba(255,255,255,0.06); border-radius: 20px;
+        padding: 2rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cand-card::before {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+        background: linear-gradient(90deg, transparent, var(--card-accent, #3b82f6), transparent);
+    }
+    .cand-card:hover { box-shadow: 0 20px 60px rgba(0,0,0,0.4); border-color: rgba(56,189,248,0.12); }
+    .cand-card .cand-rank {
+        position: absolute; top: 1.2rem; right: 1.5rem; font-size: 2rem;
+        font-weight: 900; color: rgba(255,255,255,0.06);
+    }
+    .cand-card .cand-name { font-size: 1.3rem; font-weight: 800; color: #f1f5f9; margin: 0; }
+    .cand-card .cand-meta { color: #64748b; font-size: 0.82rem; margin-top: 0.3rem; }
+    .cand-card .cand-score-inline {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        font-size: 1.5rem; font-weight: 900;
+    }
+
+    /* ── FEATURE CARDS — premium hover with glow line ── */
     .feature-card {
-        background: linear-gradient(145deg, rgba(15,23,42,0.7), rgba(30,41,59,0.3));
-        backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05);
-        border-radius: 18px; padding: 2rem 1.5rem; text-align: center;
-        min-height: 200px; position: relative; overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .feature-card::before {
-        content: ''; position: absolute; inset: 0; border-radius: 18px;
-        padding: 1px;
-        background: linear-gradient(135deg, rgba(56,189,248,0), rgba(139,92,246,0.2), rgba(56,189,248,0));
-        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor; mask-composite: exclude;
-        opacity: 0; transition: opacity 0.4s ease;
-    }
-    .feature-card:hover { transform: translateY(-6px) scale(1.02); }
-    .feature-card:hover::before { opacity: 1; }
-    .feature-card .icon {
-        font-size: 2.5rem; margin-bottom: 0.6rem;
-        filter: drop-shadow(0 4px 12px rgba(56,189,248,0.3));
-    }
-    .feature-card h4 {
-        color: #e2e8f0; font-size: 1.05rem; margin: 0.5rem 0; font-weight: 800;
-        letter-spacing: -0.01em;
-    }
-    .feature-card p { color: #94a3b8; font-size: 0.85rem; line-height: 1.6; margin: 0; }
-
-    /* ── Agent cards ── */
-    .agent-tile {
-        background: linear-gradient(145deg, rgba(15,23,42,0.7), rgba(30,41,59,0.3));
-        border-radius: 14px; padding: 1.2rem 1.4rem;
-        border-left: 3px solid #3b82f6; min-height: 90px;
+        background: linear-gradient(145deg, rgba(15,23,42,0.7), rgba(30,41,59,0.5));
+        border: 1px solid rgba(255,255,255,0.05); border-radius: 18px;
+        padding: 2rem 1.5rem; text-align: center; min-height: 200px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative; overflow: hidden;
     }
-    .agent-tile::after {
-        content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+    .feature-card::before {
+        content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px;
+        background: linear-gradient(90deg, #38bdf8, #818cf8);
+        transition: all 0.3s ease; transform: translateX(-50%);
+    }
+    .feature-card:hover::before { width: 80%; }
+    .feature-card:hover {
+        transform: translateY(-5px); border-color: rgba(56,189,248,0.15);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 20px rgba(56,189,248,0.05);
+    }
+    .feature-card .icon { font-size: 2.8rem; margin-bottom: 0.8rem; }
+    .feature-card h4 { color: #e2e8f0; font-size: 1.05rem; margin: 0.5rem 0; font-weight: 800; }
+    .feature-card p { color: #94a3b8; font-size: 0.85rem; line-height: 1.6; margin: 0; }
+
+    /* ── AGENT TILES — premium with animated border ── */
+    .agent-tile {
+        background: linear-gradient(145deg, rgba(15,23,42,0.7), rgba(30,41,59,0.5));
+        border-radius: 14px; padding: 1.2rem 1.4rem;
+        border-left: 3px solid #3b82f6;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        min-height: 85px; position: relative;
     }
     .agent-tile:hover {
-        transform: translateX(4px) scale(1.01);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        transform: translateX(4px) translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
     }
     .agent-tile .aname { font-weight: 800; color: #e2e8f0; font-size: 0.92rem; }
-    .agent-tile .adesc { color: #64748b; font-size: 0.78rem; margin-top: 0.25rem; font-weight: 500; }
+    .agent-tile .adesc { color: #64748b; font-size: 0.78rem; margin-top: 0.25rem; }
     .agent-tile .aweight {
-        display: inline-block;
-        background: linear-gradient(135deg, rgba(56,189,248,0.15), rgba(139,92,246,0.15));
-        color: #a78bfa; padding: 0.15rem 0.6rem; border-radius: 10px;
+        display: inline-block; padding: 0.15rem 0.6rem; border-radius: 10px;
         font-size: 0.68rem; font-weight: 800; margin-top: 0.4rem;
-        border: 1px solid rgba(139,92,246,0.2);
         font-family: 'JetBrains Mono', monospace;
     }
-    .agent-tile.green  { border-left-color: #10b981; }
-    .agent-tile.blue   { border-left-color: #3b82f6; }
+    .agent-tile.blue .aweight { background: rgba(59,130,246,0.15); color: #60a5fa; }
+    .agent-tile.green .aweight { background: rgba(16,185,129,0.15); color: #34d399; }
+    .agent-tile.yellow .aweight { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .agent-tile.red .aweight { background: rgba(239,68,68,0.15); color: #f87171; }
+    .agent-tile.purple .aweight { background: rgba(139,92,246,0.15); color: #a78bfa; }
+    .agent-tile.cyan .aweight { background: rgba(6,182,212,0.15); color: #22d3ee; }
+    .agent-tile.green { border-left-color: #10b981; }
+    .agent-tile.blue { border-left-color: #3b82f6; }
     .agent-tile.yellow { border-left-color: #f59e0b; }
-    .agent-tile.red    { border-left-color: #ef4444; }
+    .agent-tile.red { border-left-color: #ef4444; }
     .agent-tile.purple { border-left-color: #8b5cf6; }
-    .agent-tile.cyan   { border-left-color: #06b6d4; }
+    .agent-tile.cyan { border-left-color: #06b6d4; }
 
-    /* ── Section headers ── */
+    /* ── SECTION HEADERS — with gradient accent ── */
     .sec-header {
-        border-left: 3px solid #3b82f6; padding-left: 16px;
+        border-left: 3px solid; padding-left: 16px;
         margin: 2.5rem 0 1.5rem 0; font-size: 1.2rem; font-weight: 800;
-        color: #e2e8f0; letter-spacing: -0.02em;
-        animation: fadeInUp 0.5s ease-out;
+        color: #f1f5f9; letter-spacing: -0.02em;
+        border-image: linear-gradient(to bottom, #3b82f6, #818cf8) 1;
     }
-    .sec-header.green  { border-left-color: #10b981; }
-    .sec-header.purple { border-left-color: #8b5cf6; }
-    .sec-header.yellow { border-left-color: #f59e0b; }
-    .sec-header.cyan   { border-left-color: #06b6d4; }
+    .sec-header.green { border-image: linear-gradient(to bottom, #10b981, #34d399) 1; }
+    .sec-header.purple { border-image: linear-gradient(to bottom, #8b5cf6, #a78bfa) 1; }
+    .sec-header.yellow { border-image: linear-gradient(to bottom, #f59e0b, #fbbf24) 1; }
+    .sec-header.cyan { border-image: linear-gradient(to bottom, #06b6d4, #22d3ee) 1; }
 
-    /* ── Candidate rank badges ── */
+    /* ── GRADE PILLS — neon-glow ── */
+    .grade-pill {
+        display: inline-block; padding: 0.2rem 0.7rem; border-radius: 8px;
+        font-weight: 900; font-size: 0.82rem; letter-spacing: 0.04em;
+        font-family: 'JetBrains Mono', monospace;
+    }
+    .grade-pill.a-plus, .grade-pill.a {
+        background: rgba(16,185,129,0.12); color: #34d399;
+        box-shadow: 0 0 12px rgba(16,185,129,0.15);
+    }
+    .grade-pill.b-plus, .grade-pill.b {
+        background: rgba(59,130,246,0.12); color: #60a5fa;
+        box-shadow: 0 0 12px rgba(59,130,246,0.15);
+    }
+    .grade-pill.c { background: rgba(245,158,11,0.12); color: #fbbf24; box-shadow: 0 0 12px rgba(245,158,11,0.15); }
+    .grade-pill.d { background: rgba(249,115,22,0.12); color: #fb923c; box-shadow: 0 0 12px rgba(249,115,22,0.15); }
+    .grade-pill.f { background: rgba(239,68,68,0.12); color: #f87171; box-shadow: 0 0 12px rgba(239,68,68,0.15); }
+
+    /* ── RANK BADGES ── */
     .rank-badge {
         display: inline-flex; align-items: center; gap: 0.4rem;
         padding: 0.35rem 0.9rem; border-radius: 10px; font-weight: 800;
-        font-size: 0.82rem; font-family: 'JetBrains Mono', monospace;
+        font-size: 0.88rem; font-family: 'JetBrains Mono', monospace;
     }
-    .rank-badge.gold   { background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05)); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
-    .rank-badge.silver { background: linear-gradient(135deg, rgba(148,163,184,0.15), rgba(148,163,184,0.05)); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
-    .rank-badge.bronze { background: linear-gradient(135deg, rgba(234,88,12,0.15), rgba(234,88,12,0.05)); color: #ea580c; border: 1px solid rgba(234,88,12,0.2); }
-    .rank-badge.default { background: rgba(100,116,139,0.1); color: #64748b; }
+    .rank-badge.gold {
+        background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(234,179,8,0.1));
+        color: #fbbf24; box-shadow: 0 0 15px rgba(245,158,11,0.1);
+    }
+    .rank-badge.silver { background: rgba(148,163,184,0.12); color: #cbd5e1; }
+    .rank-badge.bronze { background: rgba(234,88,12,0.12); color: #fb923c; }
+    .rank-badge.default { background: rgba(100,116,139,0.08); color: #64748b; }
 
-    /* ── Grade pills ── */
-    .grade-pill {
-        display: inline-block; padding: 0.2rem 0.7rem; border-radius: 8px;
-        font-weight: 900; font-size: 0.78rem; letter-spacing: 0.05em;
-        font-family: 'JetBrains Mono', monospace;
-    }
-    .grade-pill.a-plus, .grade-pill.a { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
-    .grade-pill.b-plus, .grade-pill.b { background: rgba(59,130,246,0.15); color: #3b82f6; border: 1px solid rgba(59,130,246,0.2); }
-    .grade-pill.c { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
-    .grade-pill.d { background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.2); }
-    .grade-pill.f { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
-
-    /* ── Score gauge (circular) ── */
-    .score-gauge {
-        position: relative; width: 120px; height: 120px; margin: 0 auto;
-    }
-    .score-gauge svg { transform: rotate(-90deg); }
-    .score-gauge .gauge-val {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        font-size: 1.6rem; font-weight: 900; color: #e2e8f0;
-        font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* ── Candidate card ── */
-    .cand-card {
-        background: linear-gradient(145deg, rgba(15,23,42,0.8), rgba(30,41,59,0.3));
-        border: 1px solid rgba(255,255,255,0.06); border-radius: 20px;
-        padding: 2rem; margin: 1rem 0; position: relative; overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    .cand-card::before {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-        background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
-        background-size: 200% auto; animation: gradient-shift 4s ease infinite;
-    }
-    .cand-card:hover { box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-    .cand-card .cand-name {
-        font-size: 1.3rem; font-weight: 900; color: #f1f5f9;
-        letter-spacing: -0.02em;
-    }
-    .cand-card .cand-meta { color: #64748b; font-size: 0.82rem; margin-top: 0.2rem; }
-    .cand-card .cand-score {
-        font-size: 2.2rem; font-weight: 900;
-        font-family: 'JetBrains Mono', monospace;
-        background: linear-gradient(135deg, #38bdf8, #818cf8);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    .cand-card .cand-badge {
-        display: inline-block; padding: 0.2rem 0.7rem; border-radius: 8px;
-        font-weight: 800; font-size: 0.75rem; margin-left: 0.5rem;
-    }
-
-    /* ── Avatar initials ── */
-    .avatar {
-        width: 48px; height: 48px; border-radius: 14px;
-        display: inline-flex; align-items: center; justify-content: center;
-        font-weight: 900; font-size: 1.1rem; color: #fff;
-        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-        box-shadow: 0 4px 12px rgba(59,130,246,0.3);
-        flex-shrink: 0;
-    }
-
-    /* ── Step indicator ── */
+    /* ── STEP INDICATORS ── */
     .step-row { display: flex; justify-content: center; gap: 0; margin: 1.5rem 0; }
     .step-item {
         display: flex; align-items: center; gap: 0.5rem;
         padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 600; color: #475569;
     }
     .step-item.active { color: #38bdf8; }
-    .step-item.done   { color: #10b981; }
+    .step-item.done { color: #10b981; }
     .step-num {
         width: 30px; height: 30px; border-radius: 50%; display: inline-flex;
         align-items: center; justify-content: center; font-size: 0.75rem;
-        font-weight: 900; border: 2px solid #334155;
-        font-family: 'JetBrains Mono', monospace;
+        font-weight: 900; border: 2px solid #334155; font-family: 'JetBrains Mono', monospace;
     }
-    .step-item.active .step-num { border-color: #38bdf8; background: rgba(56,189,248,0.15); color: #38bdf8; }
-    .step-item.done   .step-num { border-color: #10b981; background: rgba(16,185,129,0.15); color: #10b981; }
-    .step-connector { width: 40px; height: 2px; background: #334155; align-self: center; }
-    .step-connector.done { background: #10b981; }
+    .step-item.active .step-num {
+        border-color: #38bdf8; background: rgba(56,189,248,0.12); color: #38bdf8;
+        animation: pulse-ring 2s infinite;
+    }
+    .step-item.done .step-num { border-color: #10b981; background: rgba(16,185,129,0.12); color: #10b981; }
+    .step-connector { width: 40px; height: 2px; background: #1e293b; align-self: center; }
+    .step-connector.done { background: linear-gradient(90deg, #10b981, #34d399); }
 
-    /* ── Discussion bubbles ── */
+    /* ── DISCUSSION BUBBLES ── */
     .disc-bubble {
-        background: linear-gradient(145deg, rgba(15,23,42,0.7), rgba(30,41,59,0.3));
+        background: linear-gradient(145deg, rgba(15,23,42,0.7), rgba(30,41,59,0.5));
         border-radius: 12px; padding: 0.8rem 1.2rem; margin: 0.5rem 0;
-        border-left: 3px solid #334155; font-size: 0.88rem; color: #cbd5e1;
+        border-left: 3px solid rgba(56,189,248,0.3); font-size: 0.88rem; color: #cbd5e1;
         transition: border-color 0.3s ease;
     }
-    .disc-bubble:hover { border-left-color: #38bdf8; }
+    .disc-bubble:hover { border-left-color: rgba(56,189,248,0.6); }
     .disc-bubble .agent { font-weight: 800; color: #38bdf8; }
     .disc-bubble .round {
-        color: #475569; font-size: 0.7rem; font-weight: 700;
+        color: #475569; font-size: 0.72rem; font-weight: 700;
         font-family: 'JetBrains Mono', monospace;
     }
 
-    /* ── Pipeline progress ── */
+    /* ── PIPELINE SIDEBAR STATUS ── */
     .pipeline-status {
-        background: linear-gradient(145deg, rgba(15,23,42,0.8), rgba(30,41,59,0.3));
+        background: linear-gradient(145deg, rgba(15,23,42,0.8), rgba(30,41,59,0.6));
         border-radius: 14px; padding: 1.2rem 1.5rem;
         border: 1px solid rgba(255,255,255,0.05); margin: 0.5rem 0;
-        animation: pulse-glow 4s ease-in-out infinite;
     }
     .pipeline-status .step { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0; }
     .pipeline-status .step .icon { font-size: 1.1rem; }
-    .pipeline-status .step .text { color: #94a3b8; font-size: 0.82rem; font-weight: 500; }
+    .pipeline-status .step .text { color: #94a3b8; font-size: 0.85rem; }
     .pipeline-status .step.active .text { color: #38bdf8; font-weight: 700; }
     .pipeline-status .step.done .text { color: #10b981; }
 
-    /* ── Empty state ── */
+    /* ── EMPTY STATE ── */
     .empty-state {
         text-align: center; padding: 4rem 2rem;
-        background: linear-gradient(145deg, rgba(15,23,42,0.5), rgba(30,41,59,0.2));
+        background: linear-gradient(145deg, rgba(15,23,42,0.3), rgba(30,41,59,0.2));
         border-radius: 20px; border: 1px dashed rgba(100,116,139,0.2);
     }
-    .empty-state .icon { font-size: 3.5rem; margin-bottom: 0.8rem; filter: grayscale(0.3); }
-    .empty-state h3 { color: #94a3b8; font-weight: 700; margin: 0.5rem 0; }
+    .empty-state .icon { font-size: 3.5rem; margin-bottom: 0.8rem; opacity: 0.6; }
+    .empty-state h3 { color: #94a3b8; font-weight: 700; margin: 0.5rem 0; font-size: 1.1rem; }
     .empty-state p { color: #64748b; font-size: 0.9rem; }
 
-    /* ── Sidebar — obsidian glass ── */
+    /* ── SIDEBAR — deep space gradient ── */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #050816 0%, #0a0e27 30%, #0d1130 60%, #080c20 100%) !important;
-        border-right: 1px solid rgba(139,92,246,0.1);
+        background: linear-gradient(180deg, #050510 0%, #0a0a1a 30%, #0d1033 60%, #0a0a1a 100%) !important;
     }
     [data-testid="stSidebar"]::before {
-        content: ''; position: absolute; top: 0; right: 0; width: 1px; height: 100%;
-        background: linear-gradient(180deg, transparent, rgba(56,189,248,0.2), rgba(139,92,246,0.2), transparent);
+        content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 1px;
+        background: linear-gradient(180deg, transparent, rgba(56,189,248,0.15), rgba(139,92,246,0.15), transparent);
     }
     [data-testid="stSidebar"] * { color: #e2e8f0 !important; }
     [data-testid="stSidebar"] .stRadio label {
-        padding: 0.5rem 0; transition: color 0.2s ease;
+        padding: 0.5rem 0; transition: all 0.2s ease;
     }
+    [data-testid="stSidebar"] .stRadio label:hover { padding-left: 4px; }
 
-    /* ── Data tables ── */
+    /* ── DATA TABLES ── */
     .stDataFrame thead th {
-        background: rgba(15,23,42,0.8) !important; color: #e2e8f0 !important;
+        background: rgba(15,23,42,0.9) !important; color: #e2e8f0 !important;
         font-weight: 800 !important; font-size: 0.8rem !important;
-        letter-spacing: 0.02em !important;
+        letter-spacing: 0.03em !important;
     }
-    .stDataFrame tbody td {
-        font-family: 'Inter', sans-serif !important; font-size: 0.85rem !important;
-    }
+    .stDataFrame tbody td { font-size: 0.85rem !important; }
 
-    /* ── Global tweaks ── */
+    /* ── GLOBAL PREMIUM TWEAKS ── */
     .stExpander {
         border: 1px solid rgba(255,255,255,0.05) !important;
         border-radius: 14px !important;
         background: rgba(15,23,42,0.3) !important;
     }
-    .stTabs [data-baseweb="tab"] { font-weight: 700; }
+    .stExpander:hover { border-color: rgba(56,189,248,0.1) !important; }
+    .stTabs [data-baseweb="tab"] { font-weight: 700; letter-spacing: 0.02em; }
+
     div[data-testid="stMetric"] label {
         font-size: 0.72rem !important; color: #64748b !important;
-        font-weight: 700 !important; letter-spacing: 0.06em !important;
-        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important; text-transform: uppercase !important; font-weight: 700 !important;
     }
     div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        font-size: 1.8rem !important; font-weight: 900 !important;
-        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 1.6rem !important; font-weight: 900 !important;
     }
 
-    /* ── Buttons ── */
+    /* ── BUTTONS — gradient with glow ── */
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #06b6d4 100%) !important;
-        background-size: 200% auto !important;
-        border: none !important; font-weight: 800 !important;
-        border-radius: 12px !important; letter-spacing: 0.02em !important;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+        border: none !important; font-weight: 800 !important; letter-spacing: 0.02em !important;
+        border-radius: 12px !important; padding: 0.6rem 1.5rem !important;
+        box-shadow: 0 4px 20px rgba(59,130,246,0.25) !important;
         transition: all 0.3s ease !important;
-        box-shadow: 0 4px 20px rgba(59,130,246,0.3) !important;
     }
     .stButton > button[kind="primary"]:hover {
-        background-position: right center !important;
-        box-shadow: 0 8px 30px rgba(59,130,246,0.4) !important;
+        background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+        box-shadow: 0 8px 30px rgba(59,130,246,0.35) !important;
         transform: translateY(-1px) !important;
     }
     .stButton > button {
@@ -445,35 +414,31 @@ st.markdown("""
         transition: all 0.2s ease !important;
     }
 
-    /* ── Selectbox / inputs ── */
-    .stSelectbox > div > div, .stMultiSelect > div > div,
-    .stTextInput > div > div, .stTextArea > div > div {
-        border-radius: 10px !important;
-        border-color: rgba(255,255,255,0.08) !important;
+    /* ── COMPARISON TABLE ── */
+    .compare-header {
+        background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.7));
+        border-radius: 14px; padding: 1.2rem; text-align: center; margin-bottom: 0.5rem;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .compare-header .name { font-size: 1.1rem; font-weight: 800; color: #f1f5f9; }
+    .compare-header .score {
+        font-size: 2rem; font-weight: 900;
+        background: linear-gradient(135deg, #38bdf8, #818cf8);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
 
-    /* ── Status containers ── */
-    .stAlert {
-        border-radius: 12px !important;
-        border-left-width: 3px !important;
-    }
-
-    /* ── Scrollbar ── */
+    /* ── SCROLLBAR ── */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: rgba(15,23,42,0.5); }
-    ::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, #3b82f6, #8b5cf6);
-        border-radius: 3px;
-    }
+    ::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,0.4); }
 
-    /* ── Plotly chart backgrounds ── */
-    .js-plotly-plot .plotly .main-svg { border-radius: 14px; }
+    /* ── SELECTION ── */
+    ::selection { background: rgba(56,189,248,0.3); color: #f1f5f9; }
 
-    /* ── Stat number highlight ── */
-    .stat-number {
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 900; font-size: 1.1rem;
-    }
+    /* ── HIDE STREAMLIT BRANDING ── */
+    #MainMenu, footer, header { visibility: hidden; }
+    footer:after { visibility: visible; content: ''; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -608,13 +573,38 @@ def _cache_resume_uploads(resume_files):
 
 
 def _grade_color(grade: str) -> str:
-    return {"A+": "#10b981", "A": "#10b981", "B+": "#3b82f6", "B": "#3b82f6",
-            "C": "#f59e0b", "D": "#f97316", "F": "#ef4444"}.get(grade, "#94a3b8")
+    return {"A+": "#34d399", "A": "#34d399", "B+": "#60a5fa", "B": "#60a5fa",
+            "C": "#fbbf24", "D": "#fb923c", "F": "#f87171"}.get(grade, "#94a3b8")
 
 
 def _grade_css(grade: str) -> str:
     return {"A+": "a-plus", "A": "a", "B+": "b-plus", "B": "b",
             "C": "c", "D": "d", "F": "f"}.get(grade, "")
+
+
+def _score_ring(score: float, label: str = "", size: int = 110) -> str:
+    """Render an SVG animated score ring with neon glow."""
+    pct = max(0, min(100, score))
+    circumference = 283  # 2*pi*45
+    offset = circumference - (pct / 100 * circumference)
+    color = _grade_color(
+        "A+" if pct >= 90 else "A" if pct >= 80 else "B+" if pct >= 70
+        else "B" if pct >= 60 else "C" if pct >= 50 else "D" if pct >= 40 else "F"
+    )
+    label_html = f'<div class="ring-label">{label}</div>' if label else ""
+    return f"""
+    <div class="score-ring" style="width:{size}px;height:{size}px;">
+        <svg width="{size}" height="{size}" viewBox="0 0 100 100">
+            <circle class="ring-bg" cx="50" cy="50" r="45"/>
+            <circle class="ring-fill" cx="50" cy="50" r="45"
+                    stroke="{color}" stroke-dasharray="{circumference}"
+                    stroke-dashoffset="{offset}"
+                    style="filter:drop-shadow(0 0 6px {color}40);"/>
+        </svg>
+        <div class="ring-value" style="font-size:{size*0.016}rem;">{pct:.0f}</div>
+        {label_html}
+    </div>
+    """
 
 
 def _rec_color(rec: str) -> str:
@@ -681,67 +671,6 @@ def _empty_state(icon: str, title: str, desc: str):
     """, unsafe_allow_html=True)
 
 
-def _score_gauge_svg(score: float, size: int = 100, label: str = ""):
-    """Render a circular SVG score gauge with gradient."""
-    r = (size - 10) / 2
-    circumference = 2 * 3.14159 * r
-    pct = max(0, min(100, score)) / 100
-    dash = circumference * pct
-    gap = circumference - dash
-    if score >= 80:
-        color = "#10b981"
-    elif score >= 60:
-        color = "#3b82f6"
-    elif score >= 40:
-        color = "#f59e0b"
-    else:
-        color = "#ef4444"
-    cx = cy = size / 2
-    label_html = f'<div style="font-size:0.6rem;color:#64748b;font-weight:700;margin-top:-4px">{label}</div>' if label else ""
-    return f"""
-    <div style="text-align:center">
-        <div class="score-gauge" style="width:{size}px;height:{size}px">
-            <svg width="{size}" height="{size}" viewBox="0 0 {size} {size}">
-                <circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="6"/>
-                <circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{color}" stroke-width="6"
-                        stroke-dasharray="{dash:.1f} {gap:.1f}" stroke-linecap="round"
-                        style="transition: stroke-dasharray 1s ease"/>
-            </svg>
-            <div class="gauge-val" style="font-size:{size*0.26}px;color:{color}">{score:.0f}</div>
-        </div>
-        {label_html}
-    </div>"""
-
-
-def _avatar(name: str):
-    """Generate avatar initials HTML."""
-    parts = name.strip().split()
-    initials = (parts[0][0] + (parts[-1][0] if len(parts) > 1 else "")).upper()
-    return f'<div class="avatar">{initials}</div>'
-
-
-def _candidate_card_header(name: str, score: float, grade: str, rank: int, meta: str = ""):
-    """Render a premium candidate card header."""
-    medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(rank, f"#{rank}")
-    grade_cl = _grade_css(grade)
-    return f"""
-    <div class="cand-card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="display:flex;align-items:center;gap:1rem">
-                {_avatar(name)}
-                <div>
-                    <div class="cand-name">{medal} {name}</div>
-                    <div class="cand-meta">{meta}</div>
-                </div>
-            </div>
-            <div style="text-align:right">
-                <div class="cand-score">{score:.1f}</div>
-                <span class="grade-pill {grade_cl}">{grade}</span>
-            </div>
-        </div>
-    </div>"""
-
-
 # ---------------------------------------------------------------------------
 # Navigation
 # ---------------------------------------------------------------------------
@@ -758,23 +687,22 @@ if _nav_target and _nav_target in PAGES:
 with st.sidebar:
     st.markdown("""
     <div style="text-align:center; padding: 1.5rem 0 1rem 0;">
-        <div style="font-size:2.8rem; margin-bottom:0.2rem;
-                    filter: drop-shadow(0 4px 12px rgba(56,189,248,0.3));">🔍</div>
-        <div style="font-size:1.5rem; font-weight:900; letter-spacing:-0.03em;
-                    background:linear-gradient(135deg,#38bdf8 0%,#818cf8 50%,#a78bfa 100%);
+        <div style="font-size:2.8rem; margin-bottom:0.4rem; filter:drop-shadow(0 0 8px rgba(56,189,248,0.3));">🔍</div>
+        <div style="font-size:1.4rem; font-weight:900; letter-spacing:-0.03em;
+                    background:linear-gradient(135deg,#38bdf8,#818cf8,#c084fc);
                     background-size:200% auto; animation: shimmer 3s linear infinite;
                     -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
             TalentLens
         </div>
-        <div style="color:#475569; font-size:0.65rem; font-weight:700;
-                    letter-spacing:0.15em; text-transform:uppercase; margin-top:0.3rem;">
+        <div style="color:#475569; font-size:0.68rem; font-weight:700;
+                    letter-spacing:0.12em; text-transform:uppercase; margin-top:0.3rem;">
             See beyond the resume
         </div>
         <div style="margin-top:0.5rem;">
-            <span style="display:inline-block; background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(56,189,248,0.2));
-                         color:#a78bfa; padding:0.15rem 0.6rem; border-radius:12px; font-size:0.6rem;
-                         font-weight:800; letter-spacing:0.1em; border:1px solid rgba(139,92,246,0.3);">
-                PRO v3.0
+            <span style="display:inline-block; background:linear-gradient(135deg, rgba(56,189,248,0.12), rgba(139,92,246,0.12));
+                          color:#a5b4fc; padding:0.15rem 0.6rem; border-radius:12px; font-size:0.6rem;
+                          font-weight:800; letter-spacing:0.08em; border:1px solid rgba(139,92,246,0.15);">
+                v3.0 PRO
             </span>
         </div>
     </div>
@@ -821,11 +749,11 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("""
     <div style="text-align:center; padding:0.8rem 0;">
-        <div style="color:#334155; font-size:0.65rem; font-weight:600; letter-spacing:0.05em;">
-            Built with 11 AI Agents
+        <div style="color:#1e293b; font-size:0.62rem; font-weight:700; letter-spacing:0.08em;">
+            TALENTLENS PRO v3.0
         </div>
-        <div style="color:#1e293b; font-size:0.6rem; margin-top:0.2rem;">
-            TF-IDF · SBERT · Heuristic · NLP
+        <div style="color:#1e293b; font-size:0.58rem; margin-top:0.2rem;">
+            11 Agents · Heuristic Mode · Enterprise
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -835,97 +763,142 @@ with st.sidebar:
 # PAGE: WELCOME
 # =====================================================================
 if selected_page == "🏠 Welcome":
-    # Premium hero with animated tagline
-    st.markdown("""
-    <div class="hero" style="padding:3rem 3.5rem; text-align:center;">
-        <div style="font-size:3.5rem; margin-bottom:0.5rem;
-                    filter:drop-shadow(0 8px 24px rgba(56,189,248,0.3));">🔍</div>
-        <h1 style="font-size:3rem; text-align:center;
-                   background:linear-gradient(135deg,#38bdf8 0%,#818cf8 40%,#a78bfa 70%,#06b6d4 100%);
-                   background-size:200% auto; animation:shimmer 4s linear infinite;
-                   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                   background-clip:text;">TalentLens</h1>
-        <p class="subtitle" style="font-size:1.1rem; text-align:center; max-width:600px; margin:0.8rem auto 0;">
-            Multi-Agent AI Resume Screening · Skills Matching · Background Verification · Interview Generation
-        </p>
-        <div style="display:flex; justify-content:center; gap:0.6rem; margin-top:1rem; flex-wrap:wrap;">
-            <span class="badge">11 SPECIALIST AGENTS</span>
-            <span class="badge" style="color:#10b981; background:rgba(16,185,129,0.15); border-color:rgba(16,185,129,0.3);">TF-IDF + SBERT SCORING</span>
-            <span class="badge" style="color:#f59e0b; background:rgba(245,158,11,0.15); border-color:rgba(245,158,11,0.3);">HEURISTIC NLP</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    _hero("🔍 TalentLens",
+          "See beyond the resume — Multi-Agent Evaluation · Skills Matching · Verification · Interview Prep",
+          "11 SPECIALIST AGENTS")
 
     # Session recovery banner
     if _had_saved_session and st.session_state.pipeline_completed:
         _cnt = st.session_state.pipeline_candidate_count or len(st.session_state.scores)
         st.info(f"♻️ **Previous session restored** — {_cnt} candidates screened. Navigate to **📊 Results** to review.")
 
-    # Quick stats
+    # Quick stats — premium score rings
     try:
         stats = get_stats_summary()
     except Exception:
         stats = {"total_sessions": 0, "total_candidates": 0, "avg_score": 0,
                  "top_candidate": None, "grade_distribution": {}, "monthly_trend": []}
 
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.markdown(_glass_metric(stats["total_sessions"], "Sessions", "screening runs"), unsafe_allow_html=True)
-    with c2:
-        st.markdown(_glass_metric(stats["total_candidates"], "Candidates", "resumes analyzed"), unsafe_allow_html=True)
-    with c3:
-        st.markdown(_glass_metric(f'{stats["avg_score"]:.1f}', "Avg Score", "out of 100"), unsafe_allow_html=True)
-    with c4:
-        try:
-            jd_count = len(get_all_jds())
-        except Exception:
-            jd_count = 0
-        st.markdown(_glass_metric(jd_count, "Saved JDs", "job descriptions"), unsafe_allow_html=True)
+    try:
+        jd_count = len(get_all_jds())
+    except Exception:
+        jd_count = 0
 
-    st.markdown("")
+    # Premium stat boxes with glow
+    st.markdown(f"""
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin:1.5rem 0 2.5rem 0;">
+        <div class="glass-card" style="text-align:center;padding:1.4rem 0.8rem;">
+            <div style="font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#38bdf8,#818cf8);
+                        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                        background-size:200% auto;animation:shimmer 3s linear infinite;">
+                {stats['total_sessions']}</div>
+            <div class="label">Sessions</div>
+            <div class="sublabel">screening runs</div>
+        </div>
+        <div class="glass-card" style="text-align:center;padding:1.4rem 0.8rem;">
+            <div style="font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#34d399,#38bdf8);
+                        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                        background-size:200% auto;animation:shimmer 3s linear infinite;">
+                {stats['total_candidates']}</div>
+            <div class="label">Candidates</div>
+            <div class="sublabel">resumes analyzed</div>
+        </div>
+        <div class="glass-card" style="text-align:center;padding:1.4rem 0.8rem;">
+            <div style="font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#c084fc,#f472b6);
+                        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                        background-size:200% auto;animation:shimmer 3s linear infinite;">
+                {stats['avg_score']:.1f}</div>
+            <div class="label">Avg Score</div>
+            <div class="sublabel">out of 100</div>
+        </div>
+        <div class="glass-card" style="text-align:center;padding:1.4rem 0.8rem;">
+            <div style="font-size:2.2rem;font-weight:900;background:linear-gradient(135deg,#fbbf24,#f97316);
+                        -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                        background-size:200% auto;animation:shimmer 3s linear infinite;">
+                {jd_count}</div>
+            <div class="label">Saved JDs</div>
+            <div class="sublabel">job descriptions</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # How it works — feature cards
+    # How it works — premium feature cards with numbered steps
     st.markdown('<div class="sec-header">🚀 How It Works</div>', unsafe_allow_html=True)
     w1, w2, w3, w4 = st.columns(4)
     features = [
-        ("📄", "Manage JDs", "Create, save, and manage job descriptions. Use the AI builder to generate JDs from scratch."),
-        ("📤", "Upload Resumes", "Upload candidate resumes in PDF or DOCX format. Batch process multiple files at once."),
-        ("🤖", "AI Screening", "11 specialist agents evaluate each candidate with skills matching, verification & scoring."),
-        ("📝", "Interview Prep", "Auto-generate targeted questionnaires. Download as DOCX for your interview panel."),
+        ("01", "📄", "Manage JDs", "Create, save & manage job descriptions. AI builder generates from scratch.", "#38bdf8"),
+        ("02", "📤", "Upload Resumes", "Drag & drop PDF or DOCX. Batch uploads with caching across sessions.", "#818cf8"),
+        ("03", "🤖", "AI Screening", "11 specialist agents evaluate each candidate with skills matching & scoring.", "#34d399"),
+        ("04", "📝", "Interview Prep", "Auto-generate targeted questionnaires. Export as DOCX for panel interviews.", "#fbbf24"),
     ]
-    for col, (icon, title, desc) in zip([w1, w2, w3, w4], features):
+    for col, (num, icon, title, desc, color) in zip([w1, w2, w3, w4], features):
         with col:
             st.markdown(f"""
-            <div class="feature-card">
-                <div class="icon">{icon}</div>
-                <h4>{title}</h4>
-                <p>{desc}</p>
+            <div class="feature-card" style="position:relative;overflow:hidden;">
+                <div style="position:absolute;top:-8px;right:-4px;font-size:3.5rem;font-weight:900;
+                            opacity:0.06;font-family:'JetBrains Mono',monospace;line-height:1;">{num}</div>
+                <div class="icon" style="font-size:2rem;margin-bottom:0.8rem;">{icon}</div>
+                <h4 style="color:{color};font-size:0.95rem;font-weight:800;margin-bottom:0.5rem;">{title}</h4>
+                <p style="color:#94a3b8;font-size:0.78rem;line-height:1.5;">{desc}</p>
             </div>
             """, unsafe_allow_html=True)
 
     st.markdown("")
 
-    # Agent panel overview
-    st.markdown('<div class="sec-header purple">🤖 11 Specialist Agents</div>', unsafe_allow_html=True)
-    agents_info = [
-        ("🏗️", "Application Architect", "System design & scalability", "8%", "blue"),
-        ("📦", "Product Owner", "Delivery & domain fit", "6%", "purple"),
-        ("🔒", "Security Architect", "Security & compliance", "10%", "red"),
-        ("🧪", "QA Architect", "Testing & code quality", "6%", "yellow"),
-        ("⚙️", "SRE Engineer", "Ops & observability", "8%", "cyan"),
-        ("☁️", "Cloud Solutions Architect", "AWS architecture & design", "14%", "blue"),
-        ("🔄", "AWS Migration Engineer", "Migration strategy & 6Rs", "12%", "green"),
-        ("📡", "Cloud Ops Engineer", "Day-2 ops & cost optimization", "10%", "cyan"),
-        ("🛠️", "AWS Platform Engineer", "IaC & container orchestration", "8%", "purple"),
-        ("👥", "HR Manager", "Culture fit & career progression", "10%", "green"),
-        ("🎯", "Recruiting Engineer", "Role alignment & market fit", "8%", "yellow"),
-    ]
+    # Pipeline Architecture — visual flow
+    st.markdown(f"""
+    <div style="margin:1rem 0 2rem 0;padding:1.2rem 1.5rem;border-radius:14px;
+                background:linear-gradient(135deg, rgba(56,189,248,0.04), rgba(129,140,248,0.04));
+                border:1px solid rgba(56,189,248,0.08);">
+        <div style="display:flex;align-items:center;justify-content:center;gap:0.5rem;flex-wrap:wrap;">
+            <span style="background:rgba(56,189,248,0.1);color:#38bdf8;padding:0.35rem 0.8rem;border-radius:8px;
+                          font-size:0.72rem;font-weight:700;">JD Analysis</span>
+            <span style="color:#334155;font-size:0.8rem;">→</span>
+            <span style="background:rgba(129,140,248,0.1);color:#818cf8;padding:0.35rem 0.8rem;border-radius:8px;
+                          font-size:0.72rem;font-weight:700;">Resume Parsing</span>
+            <span style="color:#334155;font-size:0.8rem;">→</span>
+            <span style="background:rgba(56,189,248,0.1);color:#38bdf8;padding:0.35rem 0.8rem;border-radius:8px;
+                          font-size:0.72rem;font-weight:700;">TF-IDF + SBERT Scoring</span>
+            <span style="color:#334155;font-size:0.8rem;">→</span>
+            <span style="background:rgba(52,211,153,0.1);color:#34d399;padding:0.35rem 0.8rem;border-radius:8px;
+                          font-size:0.72rem;font-weight:700;">Background Verification</span>
+            <span style="color:#334155;font-size:0.8rem;">→</span>
+            <span style="background:rgba(192,132,252,0.1);color:#c084fc;padding:0.35rem 0.8rem;border-radius:8px;
+                          font-size:0.72rem;font-weight:700;">11-Agent Evaluation</span>
+            <span style="color:#334155;font-size:0.8rem;">→</span>
+            <span style="background:rgba(251,191,36,0.1);color:#fbbf24;padding:0.35rem 0.8rem;border-radius:8px;
+                          font-size:0.72rem;font-weight:700;">Consensus & Ranking</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    # 3 rows of agents
-    for row_start in range(0, len(agents_info), 4):
-        row = agents_info[row_start:row_start + 4]
-        cols = st.columns(len(row))
-        for col, (icon, name, desc, weight, color) in zip(cols, row):
+    # Agent panel overview — premium tiles with group headers
+    st.markdown('<div class="sec-header purple">🤖 11 Specialist Agents</div>', unsafe_allow_html=True)
+
+    _agent_groups = {
+        "🏗️ Software & Architecture": [
+            ("🏗️", "Application Architect", "System design & scalability", "8%", "blue"),
+            ("📦", "Product Owner", "Delivery & domain fit", "6%", "purple"),
+            ("🔒", "Security Architect", "Security & compliance", "10%", "red"),
+            ("🧪", "QA Architect", "Testing & code quality", "6%", "yellow"),
+            ("⚙️", "SRE Engineer", "Ops & observability", "8%", "cyan"),
+        ],
+        "☁️ Cloud & AWS": [
+            ("☁️", "Cloud Solutions Architect", "AWS architecture & design", "14%", "blue"),
+            ("🔄", "AWS Migration Engineer", "Migration strategy & 6Rs", "12%", "green"),
+            ("📡", "Cloud Ops Engineer", "Day-2 ops & cost optimization", "10%", "cyan"),
+            ("🛠️", "AWS Platform Engineer", "IaC & container orchestration", "8%", "purple"),
+        ],
+        "👥 People & Hiring": [
+            ("👥", "HR Manager", "Culture fit & career progression", "10%", "green"),
+            ("🎯", "Recruiting Engineer", "Role alignment & market fit", "8%", "yellow"),
+        ],
+    }
+
+    for group_label, agents_info in _agent_groups.items():
+        st.caption(group_label)
+        cols = st.columns(len(agents_info))
+        for col, (icon, name, desc, weight, color) in zip(cols, agents_info):
             with col:
                 st.markdown(f"""
                 <div class="agent-tile {color}">
@@ -935,56 +908,35 @@ if selected_page == "🏠 Welcome":
                 </div>
                 """, unsafe_allow_html=True)
 
-    # Quick navigation
     st.markdown("")
+
+    # Quick navigation — premium buttons
     st.markdown('<div class="sec-header green">⚡ Quick Start</div>', unsafe_allow_html=True)
-    qc1, qc2, qc3, qc4 = st.columns(4)
+    qc1, qc2, qc3 = st.columns(3)
     with qc1:
         if st.button("📄 Create a JD", use_container_width=True):
-            st.session_state.auto_navigate_to = "📄 JD Management"
+            st.session_state.current_page = "📄 JD Management"
             st.rerun()
     with qc2:
         if st.button("🔍 Start Screening", type="primary", use_container_width=True):
-            st.session_state.auto_navigate_to = "🔍 Screening"
+            st.session_state.current_page = "🔍 Screening"
             st.rerun()
     with qc3:
         if st.button("📅 View History", use_container_width=True):
-            st.session_state.auto_navigate_to = "📅 History"
-            st.rerun()
-    with qc4:
-        if st.button("📈 Analytics", use_container_width=True):
-            st.session_state.auto_navigate_to = "📈 Analytics"
+            st.session_state.current_page = "📅 History"
             st.rerun()
 
-    # Tech stack showcase
-    st.markdown("")
-    st.markdown('<div class="sec-header cyan">🧬 Technology Stack</div>', unsafe_allow_html=True)
+    # Tech stack footer
     st.markdown("""
-    <div style="display:flex; flex-wrap:wrap; gap:0.6rem; margin-bottom:2rem;">
-        <span style="background:rgba(59,130,246,0.12); color:#60a5fa; padding:0.3rem 0.8rem;
-                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(59,130,246,0.2);
-                     font-family:'JetBrains Mono',monospace;">Python 3.14</span>
-        <span style="background:rgba(239,68,68,0.12); color:#f87171; padding:0.3rem 0.8rem;
-                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(239,68,68,0.2);
-                     font-family:'JetBrains Mono',monospace;">Streamlit</span>
-        <span style="background:rgba(16,185,129,0.12); color:#34d399; padding:0.3rem 0.8rem;
-                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(16,185,129,0.2);
-                     font-family:'JetBrains Mono',monospace;">TF-IDF</span>
-        <span style="background:rgba(139,92,246,0.12); color:#a78bfa; padding:0.3rem 0.8rem;
-                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(139,92,246,0.2);
-                     font-family:'JetBrains Mono',monospace;">SBERT</span>
-        <span style="background:rgba(245,158,11,0.12); color:#fbbf24; padding:0.3rem 0.8rem;
-                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(245,158,11,0.2);
-                     font-family:'JetBrains Mono',monospace;">Plotly</span>
-        <span style="background:rgba(6,182,212,0.12); color:#22d3ee; padding:0.3rem 0.8rem;
-                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(6,182,212,0.2);
-                     font-family:'JetBrains Mono',monospace;">SQLite</span>
-        <span style="background:rgba(236,72,153,0.12); color:#f472b6; padding:0.3rem 0.8rem;
-                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(236,72,153,0.2);
-                     font-family:'JetBrains Mono',monospace;">NLP Pipeline</span>
-        <span style="background:rgba(168,85,247,0.12); color:#c084fc; padding:0.3rem 0.8rem;
-                     border-radius:8px; font-size:0.78rem; font-weight:700; border:1px solid rgba(168,85,247,0.2);
-                     font-family:'JetBrains Mono',monospace;">Multi-Agent AI</span>
+    <div style="margin-top:2.5rem;padding:1.2rem;border-radius:12px;text-align:center;
+                background:linear-gradient(135deg, rgba(15,23,42,0.03), rgba(30,41,59,0.02));
+                border:1px solid rgba(148,163,184,0.08);">
+        <div style="color:#64748b;font-size:0.68rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+                    margin-bottom:0.4rem;">Powered By</div>
+        <div style="color:#94a3b8;font-size:0.72rem;line-height:1.8;">
+            TF-IDF · SBERT · Jaccard Similarity · LLM Agents · NLP Pipeline ·
+            Heuristic Fallback · SQLite · Streamlit · Plotly
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1227,16 +1179,39 @@ elif selected_page == "🔍 Screening":
           "Select a JD · Upload Resumes · Run the full screening pipeline",
           "STEP-BY-STEP")
 
-    # Step indicators
+    # Step indicators — premium animated
     st.markdown("""
-    <div class="step-row">
-        <div class="step-item active"><span class="step-num">1</span> Select JD</div>
-        <div class="step-connector"></div>
-        <div class="step-item"><span class="step-num">2</span> Upload Resumes</div>
-        <div class="step-connector"></div>
-        <div class="step-item"><span class="step-num">3</span> Configure</div>
-        <div class="step-connector"></div>
-        <div class="step-item"><span class="step-num">4</span> Screen</div>
+    <div style="display:flex;justify-content:center;align-items:center;gap:0;margin:0.5rem 0 2rem 0;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;">
+            <div style="width:2.4rem;height:2.4rem;border-radius:50%;display:flex;align-items:center;justify-content:center;
+                        background:linear-gradient(135deg,#38bdf8,#818cf8);color:#fff;font-weight:800;font-size:0.82rem;
+                        box-shadow:0 0 12px rgba(56,189,248,0.35);animation:pulse-ring 2s ease-in-out infinite;">1</div>
+            <span style="font-size:0.68rem;font-weight:700;color:#38bdf8;">Select JD</span>
+        </div>
+        <div style="width:3rem;height:2px;background:linear-gradient(90deg,#38bdf8,#818cf8);margin:0 0.3rem;
+                    border-radius:2px;margin-bottom:1.2rem;"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;">
+            <div style="width:2.4rem;height:2.4rem;border-radius:50%;display:flex;align-items:center;justify-content:center;
+                        background:rgba(129,140,248,0.08);color:#818cf8;font-weight:800;font-size:0.82rem;
+                        border:2px solid rgba(129,140,248,0.15);">2</div>
+            <span style="font-size:0.68rem;font-weight:600;color:#94a3b8;">Upload</span>
+        </div>
+        <div style="width:3rem;height:2px;background:rgba(148,163,184,0.12);margin:0 0.3rem;
+                    border-radius:2px;margin-bottom:1.2rem;"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;">
+            <div style="width:2.4rem;height:2.4rem;border-radius:50%;display:flex;align-items:center;justify-content:center;
+                        background:rgba(192,132,252,0.08);color:#c084fc;font-weight:800;font-size:0.82rem;
+                        border:2px solid rgba(192,132,252,0.15);">3</div>
+            <span style="font-size:0.68rem;font-weight:600;color:#94a3b8;">Configure</span>
+        </div>
+        <div style="width:3rem;height:2px;background:rgba(148,163,184,0.12);margin:0 0.3rem;
+                    border-radius:2px;margin-bottom:1.2rem;"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;">
+            <div style="width:2.4rem;height:2.4rem;border-radius:50%;display:flex;align-items:center;justify-content:center;
+                        background:rgba(52,211,153,0.08);color:#34d399;font-weight:800;font-size:0.82rem;
+                        border:2px solid rgba(52,211,153,0.15);">4</div>
+            <span style="font-size:0.68rem;font-weight:600;color:#94a3b8;">Screen</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1510,7 +1485,8 @@ elif selected_page == "🔍 Screening":
 # =====================================================================
 elif selected_page == "📊 Results":
     _hero("📊 Screening Results",
-          "Candidate rankings · Score breakdowns · Verification status")
+          "Candidate rankings · Score breakdowns · Verification status · Side-by-side comparison",
+          "AI-POWERED ANALYSIS")
 
     jd = st.session_state.jd_criteria
     scores = st.session_state.scores
@@ -1519,7 +1495,7 @@ elif selected_page == "📊 Results":
     if not scores:
         _empty_state("📊", "No Results Yet", "Go to the Screening page and run a screening session to see results here.")
     else:
-        # JD summary
+        # JD summary row
         if jd:
             jc1, jc2, jc3, jc4 = st.columns(4)
             with jc1:
@@ -1533,30 +1509,11 @@ elif selected_page == "📊 Results":
 
         st.markdown("")
 
-        # Overview metrics
-        st.markdown('<div class="sec-header">📊 Screening Overview</div>', unsafe_allow_html=True)
-        top = scores[0]
-        avg_sc = sum(s.overall_score for s in scores)/len(scores)
-        a_count = sum(1 for s in scores if s.grade.startswith("A"))
-
-        ov1, ov2, ov3, ov4, ov5 = st.columns(5)
-        with ov1:
-            st.markdown(_score_gauge_svg(len(scores), size=90, label="TOTAL"), unsafe_allow_html=True)
-        with ov2:
-            st.markdown(_score_gauge_svg(avg_sc, size=90, label="AVG SCORE"), unsafe_allow_html=True)
-        with ov3:
-            st.markdown(_score_gauge_svg(a_count / max(len(scores), 1) * 100, size=90, label="A/A+ RATE"), unsafe_allow_html=True)
-        with ov4:
-            st.markdown(f"""<div style="text-align:center">
-                <div style="font-size:2rem;margin-top:0.5rem">🏆</div>
-                <div style="font-size:0.95rem;font-weight:900;color:#f1f5f9;margin-top:0.2rem">{top.candidate.name[:18]}</div>
-                <div style="font-size:0.65rem;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:0.08em">TOP CANDIDATE</div>
-            </div>""", unsafe_allow_html=True)
-        with ov5:
-            st.markdown(_score_gauge_svg(top.overall_score, size=90, label="TOP SCORE"), unsafe_allow_html=True)
-
-        # Rankings table
-        st.markdown('<div class="sec-header green">🏆 Candidate Rankings</div>', unsafe_allow_html=True)
+        # View mode selector
+        _view_mode = st.radio(
+            "View", ["🏆 Rankings", "⚔️ Compare", "👤 Detail Cards"],
+            horizontal=True, key="results_view", label_visibility="collapsed",
+        )
         w_req = st.session_state.get("w_req", 35)
         w_pref = st.session_state.get("w_pref", 15)
         w_exp = st.session_state.get("w_exp", 25)
@@ -1564,147 +1521,306 @@ elif selected_page == "📊 Results":
         w_cert = st.session_state.get("w_cert", 10)
         w_sem = st.session_state.get("w_sem", 5)
 
-        rows = []
-        for s in scores:
-            req_total = len(s.matched_required_skills) + len(s.missing_required_skills)
-            req_match = len(s.matched_required_skills)
-            li = s.verification.linkedin
-            li_status = "✅" if (li and li.url_resolves) else "⚠️" if (li and li.url) else "❌"
-            consensus = agent_results.get(s.candidate.name)
-            agent_rec = consensus.consensus_recommendation if consensus else "N/A"
+        # ═══════════════════════════════════════════════
+        # VIEW: RANKINGS
+        # ═══════════════════════════════════════════════
+        if _view_mode == "🏆 Rankings":
+            # Score ring row for top 3
+            if len(scores) >= 1:
+                ring_cols = st.columns(min(len(scores), 5))
+                for idx, col in enumerate(ring_cols[:min(len(scores), 5)]):
+                    s = scores[idx]
+                    medal = "🥇" if idx == 0 else "🥈" if idx == 1 else "🥉" if idx == 2 else f"#{idx+1}"
+                    consensus = agent_results.get(s.candidate.name)
+                    agent_score = f"{consensus.consensus_score:.0f}" if consensus else "—"
+                    with col:
+                        st.markdown(_score_ring(s.overall_score, s.candidate.name[:15]), unsafe_allow_html=True)
+                        st.markdown(f"""
+                        <div style="text-align:center;margin-top:28px;">
+                            <span class="grade-pill {_grade_css(s.grade)}">{s.grade}</span>
+                            <span style="margin-left:6px;font-size:0.78rem;color:#64748b;">{medal}</span>
+                        </div>
+                        """, unsafe_allow_html=True)
 
-            rows.append({
-                "Rank": f"#{s.rank}", "Candidate": s.candidate.name,
-                "Score": f"{s.overall_score:.1f}", "Grade": s.grade,
-                "Skills": f"{req_match}/{req_total}",
-                "Experience": f"{s.candidate.total_experience_years:.1f}y",
-                "Trust": f"{s.verification.overall_trust_score:.0%}",
-                "LinkedIn": li_status, "Agent": agent_rec,
-            })
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+            st.markdown("")
 
-        # Stacked bar chart
-        if len(scores) > 1:
-            st.markdown('<div class="sec-header purple">📈 Score Comparison</div>', unsafe_allow_html=True)
-            fig_bar = go.Figure()
-            names = [s.candidate.name[:20] for s in scores]
-            for attr, label, color in [
-                ("required_skills", "Required Skills", "#3b82f6"),
-                ("preferred_skills", "Preferred Skills", "#8b5cf6"),
-                ("experience", "Experience", "#06b6d4"),
-                ("education", "Education", "#10b981"),
-                ("certifications", "Certifications", "#f59e0b"),
-                ("semantic_similarity", "Semantic", "#ef4444"),
-            ]:
-                fig_bar.add_trace(go.Bar(
-                    x=names, y=[getattr(s.breakdown, attr) for s in scores],
-                    name=label, marker_color=color,
-                ))
-            fig_bar.update_layout(barmode="stack", template="plotly_dark",
-                                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                                   height=380, margin=dict(l=40, r=20, t=20, b=40),
-                                   legend=dict(orientation="h", y=-0.2, font=dict(size=11)))
-            st.plotly_chart(fig_bar, use_container_width=True)
+            # Overview metrics
+            top = scores[0]
+            avg_sc = sum(s.overall_score for s in scores) / len(scores)
+            ov1, ov2, ov3, ov4, ov5 = st.columns(5)
+            with ov1: st.markdown(_glass_metric(len(scores), "Candidates", "screened"), unsafe_allow_html=True)
+            with ov2: st.markdown(_glass_metric(f"{avg_sc:.1f}", "Avg Score", "out of 100"), unsafe_allow_html=True)
+            with ov3: st.markdown(_glass_metric(sum(1 for s in scores if s.grade.startswith("A")), "A/A+ Grades", "top tier"), unsafe_allow_html=True)
+            with ov4: st.markdown(_glass_metric(top.candidate.name[:16], "Top Candidate", f"{top.overall_score:.1f}/100"), unsafe_allow_html=True)
+            with ov5:
+                top_consensus = agent_results.get(top.candidate.name)
+                _agent_label = f"{top_consensus.consensus_recommendation}" if top_consensus else "N/A"
+                st.markdown(_glass_metric(_agent_label, "Agent Verdict", "consensus"), unsafe_allow_html=True)
 
-        # Candidate detail cards
-        st.markdown('<div class="sec-header">👤 Candidate Details</div>', unsafe_allow_html=True)
-        for s in scores:
-            medal = "🥇" if s.rank == 1 else "🥈" if s.rank == 2 else "🥉" if s.rank == 3 else f"#{s.rank}"
-            # Premium card header
-            meta = f"{s.candidate.total_experience_years:.1f}y exp · {s.candidate.location or 'Unknown'}"
-            st.markdown(_candidate_card_header(s.candidate.name, s.overall_score, s.grade, s.rank, meta), unsafe_allow_html=True)
-            with st.expander(f"📋 View full details for {s.candidate.name}", expanded=(s.rank == 1)):
-                ic1, ic2, ic3 = st.columns(3)
-                with ic1:
-                    st.markdown(f"📧 {s.candidate.email or 'N/A'}")
-                    st.markdown(f"📱 {s.candidate.phone or 'N/A'}")
-                with ic2:
-                    st.markdown(f"📍 {s.candidate.location or 'N/A'}")
-                    st.markdown(f"🕐 **{s.candidate.total_experience_years:.1f} years** experience")
-                with ic3:
-                    li_url = s.candidate.linkedin_url or (s.verification.linkedin.url if s.verification.linkedin else "")
-                    st.markdown(f"🔗 {li_url or 'N/A'}")
-                    st.markdown(f"🐙 {s.candidate.github_url or 'N/A'}")
+            st.markdown("")
 
-                st.markdown("---")
+            # Rankings table
+            st.markdown('<div class="sec-header green">🏆 Full Rankings</div>', unsafe_allow_html=True)
+            rows = []
+            for s in scores:
+                req_total = len(s.matched_required_skills) + len(s.missing_required_skills)
+                req_match = len(s.matched_required_skills)
+                li = s.verification.linkedin
+                li_status = "✅" if (li and li.url_resolves) else "⚠️" if (li and li.url) else "❌"
+                consensus = agent_results.get(s.candidate.name)
+                agent_rec = consensus.consensus_recommendation if consensus else "N/A"
+                rows.append({
+                    "Rank": f"#{s.rank}", "Candidate": s.candidate.name,
+                    "Score": f"{s.overall_score:.1f}", "Grade": s.grade,
+                    "Skills": f"{req_match}/{req_total}",
+                    "Exp": f"{s.candidate.total_experience_years:.1f}y",
+                    "Trust": f"{s.verification.overall_trust_score:.0%}",
+                    "LI": li_status, "Agent": agent_rec,
+                })
+            st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
-                # Radar + Score table
-                rc1, rc2 = st.columns(2)
-                with rc1:
-                    b = s.breakdown
-                    cats = ["Required", "Preferred", "Experience", "Education", "Certs", "Semantic"]
-                    maxes = [w_req, w_pref, w_exp, w_edu, w_cert, w_sem]
-                    vals = [b.required_skills, b.preferred_skills, b.experience, b.education, b.certifications, b.semantic_similarity]
-                    pcts = [v / m * 100 if m > 0 else 0 for v, m in zip(vals, maxes)]
-                    fig_r = go.Figure()
-                    fig_r.add_trace(go.Scatterpolar(
-                        r=pcts + [pcts[0]], theta=cats + [cats[0]],
-                        fill="toself", fillcolor="rgba(59,130,246,0.15)",
-                        line=dict(color="#3b82f6", width=2),
+            # Stacked bar comparison
+            if len(scores) > 1:
+                st.markdown('<div class="sec-header purple">📈 Score Breakdown Comparison</div>', unsafe_allow_html=True)
+                fig_bar = go.Figure()
+                names = [s.candidate.name[:18] for s in scores]
+                for attr, label, color in [
+                    ("required_skills", "Required", "#3b82f6"),
+                    ("preferred_skills", "Preferred", "#8b5cf6"),
+                    ("experience", "Experience", "#06b6d4"),
+                    ("education", "Education", "#10b981"),
+                    ("certifications", "Certs", "#f59e0b"),
+                    ("semantic_similarity", "Semantic", "#ef4444"),
+                ]:
+                    fig_bar.add_trace(go.Bar(
+                        x=names, y=[getattr(s.breakdown, attr) for s in scores],
+                        name=label, marker_color=color,
                     ))
-                    fig_r.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 100], showticklabels=False)),
-                                         showlegend=False, template="plotly_dark",
-                                         paper_bgcolor="rgba(0,0,0,0)", height=260,
-                                         margin=dict(l=60, r=60, t=15, b=15))
-                    st.plotly_chart(fig_r, use_container_width=True)
-                with rc2:
-                    score_df = pd.DataFrame({
-                        "Category": cats, "Points": [f"{v:.1f}" for v in vals], "Max": maxes,
-                        "%": [f"{p:.0f}%" for p in pcts],
-                    })
-                    st.dataframe(score_df, hide_index=True, use_container_width=True)
-                    st.markdown(f"**Total: {s.overall_score:.1f} / 100**")
+                fig_bar.update_layout(barmode="stack", template="plotly_dark",
+                                       paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                                       height=380, margin=dict(l=40, r=20, t=20, b=40),
+                                       legend=dict(orientation="h", y=-0.2, font=dict(size=11)))
+                st.plotly_chart(fig_bar, use_container_width=True)
 
-                    if jd:
-                        gap = compute_skill_gap(s.candidate.skills, s.candidate.raw_text, jd)
-                        sev = {"Critical": "🔴", "Moderate": "🟡", "Low": "🟢"}.get(gap["gap_severity"], "⚪")
-                        st.markdown(f"**Skill Gap:** {sev} {gap['gap_severity']} ({gap['required_match_pct']}% req match)")
+        # ═══════════════════════════════════════════════
+        # VIEW: COMPARE (side-by-side)
+        # ═══════════════════════════════════════════════
+        elif _view_mode == "⚔️ Compare":
+            st.markdown('<div class="sec-header cyan">⚔️ Side-by-Side Comparison</div>', unsafe_allow_html=True)
+            cand_names = [s.candidate.name for s in scores]
+            cmp1, cmp2 = st.columns(2)
+            with cmp1:
+                left_name = st.selectbox("Candidate A", cand_names, index=0, key="cmp_left")
+            with cmp2:
+                right_idx = min(1, len(cand_names) - 1)
+                right_name = st.selectbox("Candidate B", cand_names, index=right_idx, key="cmp_right")
 
-                # Skills matched/missing
-                sk1, sk2 = st.columns(2)
-                with sk1:
-                    if s.matched_required_skills:
-                        st.success(f"✅ **Matched:** {', '.join(s.matched_required_skills)}")
-                    else:
-                        st.warning("No required skills matched")
-                with sk2:
-                    if s.missing_required_skills:
-                        st.error(f"❌ **Missing:** {', '.join(s.missing_required_skills)}")
-                    else:
-                        st.success("✅ All required skills matched!")
+            left_s = next(s for s in scores if s.candidate.name == left_name)
+            right_s = next(s for s in scores if s.candidate.name == right_name)
 
-                # Verification
-                st.markdown("---")
-                vc1, vc2, vc3 = st.columns(3)
-                with vc1:
-                    st.markdown("**🏢 Companies**")
-                    for co in s.verification.companies:
-                        st.write(f"{'✅' if co.found else '❌'} **{co.name}** ({co.company_type}, {co.legitimacy_score:.0%})")
-                with vc2:
-                    st.markdown("**🔗 LinkedIn**")
-                    li = s.verification.linkedin
-                    if li:
-                        if li.url_resolves:
-                            st.write(f"✅ Verified ({li.authenticity_score:.0%})")
-                        elif li.url:
-                            st.write(f"⚠️ Found: {li.url}")
+            # Score rings side by side
+            lr1, lr2 = st.columns(2)
+            with lr1:
+                st.markdown(f"""
+                <div class="compare-header">
+                    <div class="name">{left_s.candidate.name}</div>
+                    <div class="score">{left_s.overall_score:.1f}</div>
+                    <span class="grade-pill {_grade_css(left_s.grade)}">{left_s.grade}</span>
+                </div>
+                """, unsafe_allow_html=True)
+            with lr2:
+                st.markdown(f"""
+                <div class="compare-header">
+                    <div class="name">{right_s.candidate.name}</div>
+                    <div class="score">{right_s.overall_score:.1f}</div>
+                    <span class="grade-pill {_grade_css(right_s.grade)}">{right_s.grade}</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+            # Radar overlay
+            b_l = left_s.breakdown
+            b_r = right_s.breakdown
+            cats = ["Required", "Preferred", "Experience", "Education", "Certs", "Semantic"]
+            maxes = [w_req, w_pref, w_exp, w_edu, w_cert, w_sem]
+            vals_l = [b_l.required_skills, b_l.preferred_skills, b_l.experience, b_l.education, b_l.certifications, b_l.semantic_similarity]
+            vals_r = [b_r.required_skills, b_r.preferred_skills, b_r.experience, b_r.education, b_r.certifications, b_r.semantic_similarity]
+            pcts_l = [v / m * 100 if m > 0 else 0 for v, m in zip(vals_l, maxes)]
+            pcts_r = [v / m * 100 if m > 0 else 0 for v, m in zip(vals_r, maxes)]
+
+            fig_cmp = go.Figure()
+            fig_cmp.add_trace(go.Scatterpolar(
+                r=pcts_l + [pcts_l[0]], theta=cats + [cats[0]],
+                fill="toself", fillcolor="rgba(59,130,246,0.12)",
+                line=dict(color="#3b82f6", width=2.5), name=left_name[:18],
+            ))
+            fig_cmp.add_trace(go.Scatterpolar(
+                r=pcts_r + [pcts_r[0]], theta=cats + [cats[0]],
+                fill="toself", fillcolor="rgba(139,92,246,0.12)",
+                line=dict(color="#8b5cf6", width=2.5), name=right_name[:18],
+            ))
+            fig_cmp.update_layout(
+                polar=dict(radialaxis=dict(visible=True, range=[0, 100], showticklabels=False,
+                                            gridcolor="rgba(255,255,255,0.05)")),
+                template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)",
+                height=420, margin=dict(l=80, r=80, t=30, b=30),
+                legend=dict(orientation="h", y=-0.1, font=dict(size=12)),
+            )
+            st.plotly_chart(fig_cmp, use_container_width=True)
+
+            # Dimension-by-dimension comparison
+            st.markdown('<div class="sec-header">📊 Dimension Breakdown</div>', unsafe_allow_html=True)
+            dim_rows = []
+            for cat, vl, vr, mx in zip(cats, vals_l, vals_r, maxes):
+                winner = "→" if abs(vl - vr) < 0.5 else "◀" if vl > vr else "▶"
+                dim_rows.append({
+                    "Dimension": cat, f"{left_name[:15]}": f"{vl:.1f}/{mx}",
+                    "vs": winner, f"{right_name[:15]}": f"{vr:.1f}/{mx}",
+                })
+            st.dataframe(pd.DataFrame(dim_rows), hide_index=True, use_container_width=True)
+
+            # Skills diff
+            sk_left = set(s.lower() for s in left_s.matched_required_skills)
+            sk_right = set(s.lower() for s in right_s.matched_required_skills)
+            only_left = sk_left - sk_right
+            only_right = sk_right - sk_left
+            both = sk_left & sk_right
+
+            sd1, sd2, sd3 = st.columns(3)
+            with sd1:
+                st.markdown(f"**Only {left_name[:15]}**")
+                for sk in sorted(only_left): st.write(f"🔵 {sk}")
+                if not only_left: st.caption("None")
+            with sd2:
+                st.markdown("**Both match**")
+                for sk in sorted(both): st.write(f"✅ {sk}")
+                if not both: st.caption("None")
+            with sd3:
+                st.markdown(f"**Only {right_name[:15]}**")
+                for sk in sorted(only_right): st.write(f"🟣 {sk}")
+                if not only_right: st.caption("None")
+
+        # ═══════════════════════════════════════════════
+        # VIEW: DETAIL CARDS
+        # ═══════════════════════════════════════════════
+        else:
+            st.markdown('<div class="sec-header">👤 Candidate Detail Cards</div>', unsafe_allow_html=True)
+            for s in scores:
+                medal = "🥇" if s.rank == 1 else "🥈" if s.rank == 2 else "🥉" if s.rank == 3 else f"#{s.rank}"
+                consensus = agent_results.get(s.candidate.name)
+                agent_badge = f" · 🤖 {consensus.consensus_recommendation}" if consensus else ""
+                with st.expander(f"{medal}  {s.candidate.name}  ·  {s.overall_score:.1f}/100  ·  {s.grade}{agent_badge}", expanded=(s.rank == 1)):
+                    # Top row: score ring + info + agent verdict
+                    tc1, tc2, tc3 = st.columns([1, 2, 1])
+                    with tc1:
+                        st.markdown(_score_ring(s.overall_score, "Overall"), unsafe_allow_html=True)
+                        st.markdown("<div style='height:24px'></div>", unsafe_allow_html=True)
+                        if consensus:
+                            st.markdown(_score_ring(consensus.consensus_score, "Agent"), unsafe_allow_html=True)
+                    with tc2:
+                        st.markdown(f"### {s.candidate.name}")
+                        st.markdown(f"📧 {s.candidate.email or 'N/A'}  ·  📱 {s.candidate.phone or 'N/A'}")
+                        st.markdown(f"📍 {s.candidate.location or 'N/A'}  ·  🕐 **{s.candidate.total_experience_years:.1f}y** experience")
+                        li_url = s.candidate.linkedin_url or (s.verification.linkedin.url if s.verification.linkedin else "")
+                        st.markdown(f"🔗 {li_url or 'N/A'}  ·  🐙 {s.candidate.github_url or 'N/A'}")
+                        if consensus:
+                            st.markdown(f"🤖 **{consensus.consensus_recommendation}** · Confidence: **{consensus.confidence:.0%}**")
+                            if consensus.risk_flags:
+                                for rf in consensus.risk_flags[:3]:
+                                    st.caption(rf)
+                    with tc3:
+                        st.markdown(f"""
+                        <div class="glass-card" style="padding:1rem;">
+                            <div class="value" style="font-size:1.6rem;color:{_grade_color(s.grade)}">{s.grade}</div>
+                            <div class="label">Grade</div>
+                            <div class="sublabel">Rank #{s.rank}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        st.markdown(f"""
+                        <div class="glass-card" style="padding:1rem;margin-top:0.5rem;">
+                            <div class="value" style="font-size:1.3rem;">{s.verification.overall_trust_score:.0%}</div>
+                            <div class="label">Trust Score</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    st.markdown("---")
+
+                    # Radar + Score table
+                    rc1, rc2 = st.columns(2)
+                    with rc1:
+                        b = s.breakdown
+                        cats = ["Required", "Preferred", "Experience", "Education", "Certs", "Semantic"]
+                        maxes = [w_req, w_pref, w_exp, w_edu, w_cert, w_sem]
+                        vals = [b.required_skills, b.preferred_skills, b.experience, b.education, b.certifications, b.semantic_similarity]
+                        pcts = [v / m * 100 if m > 0 else 0 for v, m in zip(vals, maxes)]
+                        fig_r = go.Figure()
+                        fig_r.add_trace(go.Scatterpolar(
+                            r=pcts + [pcts[0]], theta=cats + [cats[0]],
+                            fill="toself", fillcolor="rgba(56,189,248,0.12)",
+                            line=dict(color="#38bdf8", width=2.5),
+                        ))
+                        fig_r.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 100], showticklabels=False,
+                                                                        gridcolor="rgba(255,255,255,0.05)")),
+                                             showlegend=False, template="plotly_dark",
+                                             paper_bgcolor="rgba(0,0,0,0)", height=280,
+                                             margin=dict(l=60, r=60, t=15, b=15))
+                        st.plotly_chart(fig_r, use_container_width=True)
+                    with rc2:
+                        score_df = pd.DataFrame({
+                            "Dimension": cats, "Score": [f"{v:.1f}" for v in vals], "Max": maxes,
+                            "Pct": [f"{p:.0f}%" for p in pcts],
+                        })
+                        st.dataframe(score_df, hide_index=True, use_container_width=True)
+                        st.markdown(f"**Total: {s.overall_score:.1f} / 100**")
+                        if jd:
+                            gap = compute_skill_gap(s.candidate.skills, s.candidate.raw_text, jd)
+                            sev = {"Critical": "🔴", "Moderate": "🟡", "Low": "🟢"}.get(gap["gap_severity"], "⚪")
+                            st.markdown(f"**Skill Gap:** {sev} {gap['gap_severity']} ({gap['required_match_pct']}% req match)")
+
+                    # Skills
+                    sk1, sk2 = st.columns(2)
+                    with sk1:
+                        if s.matched_required_skills:
+                            st.success(f"✅ **Matched:** {', '.join(s.matched_required_skills)}")
                         else:
-                            st.write("❌ Not found")
-                    st.markdown("**🆔 Identity**")
-                    ident = s.verification.identity
-                    if ident:
-                        st.write(f"Score: **{ident.overall_identity_score:.0%}** ({ident.method})")
-                with vc3:
-                    st.markdown("**📧 Email**")
-                    if ident and ident.email:
-                        em = ident.email
-                        st.write(f"{'✅' if em.format_valid else '❌'} Format · {'✅' if em.mx_record_exists else '❌'} MX · {em.domain_type}")
-                    st.markdown("**📅 Timeline**")
-                    if ident and ident.timeline:
-                        tl = ident.timeline
-                        st.write(f"{'✅' if tl.timeline_plausible else '⚠️'} {tl.calculated_years:.1f}y calculated")
-                        for gap in tl.gap_details:
-                            st.warning(gap)
+                            st.warning("No required skills matched")
+                    with sk2:
+                        if s.missing_required_skills:
+                            st.error(f"❌ **Missing:** {', '.join(s.missing_required_skills)}")
+                        else:
+                            st.success("✅ All required skills matched!")
+
+                    # Verification
+                    st.markdown("---")
+                    vc1, vc2, vc3 = st.columns(3)
+                    with vc1:
+                        st.markdown("**🏢 Companies**")
+                        for co in s.verification.companies:
+                            st.write(f"{'✅' if co.found else '❌'} **{co.name}** ({co.company_type}, {co.legitimacy_score:.0%})")
+                    with vc2:
+                        st.markdown("**🔗 LinkedIn**")
+                        li = s.verification.linkedin
+                        if li:
+                            if li.url_resolves:
+                                st.write(f"✅ Verified ({li.authenticity_score:.0%})")
+                            elif li.url:
+                                st.write(f"⚠️ Found: {li.url}")
+                            else:
+                                st.write("❌ Not found")
+                        st.markdown("**🆔 Identity**")
+                        ident = s.verification.identity
+                        if ident:
+                            st.write(f"Score: **{ident.overall_identity_score:.0%}** ({ident.method})")
+                    with vc3:
+                        st.markdown("**📧 Email**")
+                        if ident and ident.email:
+                            em = ident.email
+                            st.write(f"{'✅' if em.format_valid else '❌'} Format · {'✅' if em.mx_record_exists else '❌'} MX · {em.domain_type}")
+                        st.markdown("**📅 Timeline**")
+                        if ident and ident.timeline:
+                            tl = ident.timeline
+                            st.write(f"{'✅' if tl.timeline_plausible else '⚠️'} {tl.calculated_years:.1f}y calculated")
+                            for tl_gap in tl.gap_details:
+                                st.warning(tl_gap)
 
         # Export
         st.markdown("---")
@@ -1741,34 +1857,62 @@ elif selected_page == "🤖 Agent Panel":
         if selected_candidate and selected_candidate in agent_results:
             consensus: ConsensusResult = agent_results[selected_candidate]
 
-            # Consensus cards — premium gauges
-            cc1, cc2, cc3, cc4 = st.columns(4)
-            with cc1:
-                st.markdown(_score_gauge_svg(consensus.consensus_score, size=110, label="CONSENSUS"), unsafe_allow_html=True)
-            with cc2:
-                _gc = _grade_color(consensus.consensus_grade)
-                st.markdown(f"""<div class="glass-card">
-                    <div class="value" style="-webkit-text-fill-color:{_gc};background:none;font-size:3rem">{consensus.consensus_grade}</div>
-                    <div class="label">Grade</div>
-                </div>""", unsafe_allow_html=True)
-            with cc3:
-                _rc = _rec_color(consensus.consensus_recommendation)
-                st.markdown(f"""<div class="glass-card">
-                    <div class="value" style="-webkit-text-fill-color:{_rc};background:none;font-size:1.2rem">{consensus.consensus_recommendation}</div>
-                    <div class="label">Recommendation</div>
-                </div>""", unsafe_allow_html=True)
-            with cc4:
-                st.markdown(_score_gauge_svg(consensus.confidence * 100, size=110, label="CONFIDENCE"), unsafe_allow_html=True)
-
-            st.markdown("")
-            st.markdown(consensus.summary)
+            # ── Premium consensus header with score ring + metrics ──
+            ch1, ch2, ch3 = st.columns([1.2, 2.5, 1.2])
+            with ch1:
+                st.markdown(_score_ring(consensus.consensus_score, "Consensus", size=130), unsafe_allow_html=True)
+            with ch2:
+                _rec_clr = _rec_color(consensus.consensus_recommendation)
+                _grade_clr = _grade_color(consensus.consensus_grade)
+                _conf_pct = f"{consensus.confidence:.0%}"
+                st.markdown(f"""
+                <div style="padding:0.5rem 0;">
+                    <div style="font-size:1.5rem;font-weight:800;color:#0f172a;margin-bottom:0.3rem;">
+                        {selected_candidate}
+                    </div>
+                    <div style="display:flex;gap:0.8rem;align-items:center;flex-wrap:wrap;margin-bottom:0.8rem;">
+                        <span style="background:{_rec_clr}18;color:{_rec_clr};padding:0.3rem 0.9rem;
+                                      border-radius:20px;font-weight:700;font-size:0.82rem;
+                                      border:1px solid {_rec_clr}30;">
+                            {consensus.consensus_recommendation}
+                        </span>
+                        <span class="grade-pill {_grade_css(consensus.consensus_grade)}"
+                              style="font-size:0.82rem;padding:0.3rem 0.7rem;">
+                            {consensus.consensus_grade}
+                        </span>
+                        <span style="color:#64748b;font-size:0.82rem;font-weight:600;">
+                            Confidence: <span style="color:#0f172a;font-weight:800;">{_conf_pct}</span>
+                        </span>
+                    </div>
+                    <p style="color:#475569;font-size:0.82rem;line-height:1.6;margin:0;">
+                        {consensus.summary[:300]}{'…' if len(consensus.summary) > 300 else ''}
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+            with ch3:
+                _n_agents = len(consensus.evaluations)
+                _n_hire = sum(1 for e in consensus.evaluations if "Hire" in e.recommendation and "No" not in e.recommendation)
+                _n_no = _n_agents - _n_hire
+                st.markdown(f"""
+                <div class="glass-card" style="padding:1rem;text-align:center;">
+                    <div style="font-size:1.8rem;font-weight:900;color:#34d399;">{_n_hire}</div>
+                    <div class="label">Hire Votes</div>
+                </div>
+                <div class="glass-card" style="padding:1rem;text-align:center;margin-top:0.5rem;">
+                    <div style="font-size:1.8rem;font-weight:900;color:#f87171;">{_n_no}</div>
+                    <div class="label">No Hire</div>
+                </div>
+                """, unsafe_allow_html=True)
 
             if consensus.risk_flags:
+                st.markdown("")
                 for flag in consensus.risk_flags:
                     st.warning(f"🚩 {flag}")
 
-            # Agent evaluations as card grid
-            st.markdown('<div class="sec-header">👥 Agent Evaluations</div>', unsafe_allow_html=True)
+            st.markdown("")
+
+            # ── Agent evaluations — Premium two-column cards ──
+            st.markdown('<div class="sec-header">👥 Individual Agent Evaluations</div>', unsafe_allow_html=True)
 
             for row_start in range(0, len(consensus.evaluations), 2):
                 row_evs = consensus.evaluations[row_start:row_start + 2]
@@ -1776,23 +1920,48 @@ elif selected_page == "🤖 Agent Panel":
                 for col, ev in zip(cols, row_evs):
                     with col:
                         icon = _agent_icon(ev.agent_name)
-                        color = _AGENT_COLORS.get(ev.agent_name, "blue")
-                        with st.expander(f"{icon} {ev.agent_name} — {ev.score}/100 · {ev.recommendation}", expanded=False):
+                        color_name = _AGENT_COLORS.get(ev.agent_name, "blue")
+                        rec_clr = _rec_color(ev.recommendation)
+                        # Premium agent card header
+                        st.markdown(f"""
+                        <div class="agent-tile {color_name}" style="margin-bottom:0;border-radius:12px 12px 0 0;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div class="aname">{icon} {ev.agent_name}</div>
+                                <div style="text-align:right;">
+                                    <span style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;
+                                                  font-weight:800;color:#0f172a;">{ev.score}</span>
+                                    <span style="color:#94a3b8;font-size:0.7rem;">/100</span>
+                                </div>
+                            </div>
+                            <div style="margin-top:0.4rem;">
+                                <span style="background:{rec_clr}15;color:{rec_clr};padding:0.15rem 0.55rem;
+                                              border-radius:10px;font-weight:700;font-size:0.68rem;
+                                              border:1px solid {rec_clr}25;">{ev.recommendation}</span>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        with st.expander("View Details", expanded=False):
                             em1, em2 = st.columns(2)
                             with em1:
-                                st.markdown("**Strengths**")
+                                st.markdown("**✅ Strengths**")
                                 for s_item in ev.strengths[:5]:
-                                    st.markdown(f"✅ {s_item}")
+                                    st.markdown(f"<span style='color:#34d399;'>●</span> {s_item}", unsafe_allow_html=True)
                             with em2:
-                                st.markdown("**Concerns**")
+                                st.markdown("**⚠️ Concerns**")
                                 for c_item in ev.concerns[:5]:
-                                    st.markdown(f"⚠️ {c_item}")
+                                    st.markdown(f"<span style='color:#fbbf24;'>●</span> {c_item}", unsafe_allow_html=True)
                             if ev.skill_gaps:
-                                st.caption(f"**Skill Gaps:** {', '.join(ev.skill_gaps[:5])}")
+                                gap_pills = " ".join(
+                                    f'<span style="background:rgba(239,68,68,0.08);color:#f87171;padding:0.15rem 0.5rem;'
+                                    f'border-radius:8px;font-size:0.68rem;font-weight:600;margin:0.1rem;">{g}</span>'
+                                    for g in ev.skill_gaps[:5]
+                                )
+                                st.markdown(f"**Skill Gaps:** {gap_pills}", unsafe_allow_html=True)
                             if ev.key_questions:
-                                st.caption(f"**Top Question:** {ev.key_questions[0]}")
+                                st.caption(f"💡 **Top Question:** {ev.key_questions[0]}")
 
-            # Radar chart
+            # ── Radar chart ──
+            st.markdown("")
             st.markdown('<div class="sec-header purple">📊 Agent Score Radar</div>', unsafe_allow_html=True)
             agent_names = [ev.agent_name[:15] for ev in consensus.evaluations]
             agent_scores = [ev.score for ev in consensus.evaluations]
@@ -1801,24 +1970,52 @@ elif selected_page == "🤖 Agent Panel":
             fig_agent.add_trace(go.Scatterpolar(
                 r=agent_scores + [agent_scores[0]],
                 theta=agent_names + [agent_names[0]],
-                fill="toself", fillcolor="rgba(56,189,248,0.15)",
-                line=dict(color="#38bdf8", width=2),
+                fill="toself", fillcolor="rgba(56,189,248,0.12)",
+                line=dict(color="#38bdf8", width=2.5),
                 name=selected_candidate,
+            ))
+            # Add threshold ring
+            fig_agent.add_trace(go.Scatterpolar(
+                r=[70] * (len(agent_names) + 1),
+                theta=agent_names + [agent_names[0]],
+                fill="none", line=dict(color="rgba(251,191,36,0.3)", width=1, dash="dot"),
+                name="Hire Threshold",
             ))
             fig_agent.update_layout(
                 polar=dict(
-                    radialaxis=dict(visible=True, range=[0, 100], tickfont=dict(size=9, color="#475569"),
-                                    gridcolor="rgba(255,255,255,0.05)"),
-                    angularaxis=dict(gridcolor="rgba(255,255,255,0.05)"),
+                    radialaxis=dict(visible=True, range=[0, 100], tickfont=dict(size=9),
+                                     gridcolor="rgba(0,0,0,0.04)"),
+                    angularaxis=dict(gridcolor="rgba(0,0,0,0.04)"),
                     bgcolor="rgba(0,0,0,0)",
                 ),
                 template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)",
                 height=420, margin=dict(l=90, r=90, t=30, b=30),
-                font=dict(family="Inter, sans-serif"),
+                legend=dict(orientation="h", y=-0.08, font=dict(size=10)),
             )
             st.plotly_chart(fig_agent, use_container_width=True)
 
-            # Discussion log
+            # ── Score heatmap bar ──
+            st.markdown('<div class="sec-header cyan">📊 Agent Score Distribution</div>', unsafe_allow_html=True)
+            _sorted_evs = sorted(consensus.evaluations, key=lambda e: e.score, reverse=True)
+            _ev_names = [e.agent_name for e in _sorted_evs]
+            _ev_scores = [e.score for e in _sorted_evs]
+            _ev_colors = ["#34d399" if s >= 80 else "#60a5fa" if s >= 70 else "#fbbf24" if s >= 60
+                           else "#fb923c" if s >= 50 else "#f87171" for s in _ev_scores]
+
+            fig_bar = go.Figure(go.Bar(
+                x=_ev_scores, y=_ev_names, orientation="h",
+                marker_color=_ev_colors, text=[f"{s}" for s in _ev_scores], textposition="auto",
+                textfont=dict(family="JetBrains Mono", weight="bold"),
+            ))
+            fig_bar.update_layout(
+                template="plotly_dark", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                height=320, margin=dict(l=10, r=20, t=10, b=10),
+                yaxis=dict(autorange="reversed"),
+                xaxis=dict(range=[0, 100], gridcolor="rgba(0,0,0,0.04)"),
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
+
+            # ── Discussion log ──
             if consensus.discussion:
                 st.markdown('<div class="sec-header">💬 Agent Discussion Log</div>', unsafe_allow_html=True)
                 for msg in consensus.discussion:
@@ -1830,11 +2027,19 @@ elif selected_page == "🤖 Agent Panel":
                         unsafe_allow_html=True,
                     )
 
-            # Interview focus areas
+            # ── Interview focus areas ──
             if consensus.interview_focus_areas:
                 st.markdown('<div class="sec-header green">🎯 Interview Focus Areas</div>', unsafe_allow_html=True)
                 for i, q in enumerate(consensus.interview_focus_areas, 1):
-                    st.write(f"**{i}.** {q}")
+                    st.markdown(f"""
+                    <div style="display:flex;align-items:flex-start;gap:0.7rem;margin-bottom:0.6rem;">
+                        <span style="background:linear-gradient(135deg,#38bdf8,#818cf8);color:#fff;
+                                      min-width:1.6rem;height:1.6rem;border-radius:50%;display:flex;
+                                      align-items:center;justify-content:center;font-size:0.72rem;
+                                      font-weight:800;">{i}</span>
+                        <span style="color:#334155;font-size:0.85rem;line-height:1.5;">{q}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
 
 
 # =====================================================================
@@ -1968,18 +2173,28 @@ elif selected_page == "📈 Analytics":
                  "monthly_trend": [], "pass_rate": 0, "top_demanded_skills": [],
                  "top_missing_skills": [], "top_matched_skills": []}
 
-    # Row 1: Key metrics (6 cols now)
+    # Row 1: Key metrics — premium gradient values
     ac1, ac2, ac3, ac4, ac5, ac6 = st.columns(6)
-    with ac1:
-        st.markdown(_glass_metric(stats["total_sessions"], "Sessions", "screening runs"), unsafe_allow_html=True)
-    with ac2:
-        st.markdown(_glass_metric(stats["total_candidates"], "Candidates", "total scans"), unsafe_allow_html=True)
-    with ac3:
-        st.markdown(_glass_metric(stats.get("unique_candidates", "—"), "Unique", "distinct names"), unsafe_allow_html=True)
-    with ac4:
-        st.markdown(_glass_metric(f'{stats["avg_score"]:.1f}' if stats["avg_score"] else "0", "Avg Score", "out of 100"), unsafe_allow_html=True)
-    with ac5:
-        st.markdown(_glass_metric(f'{stats.get("pass_rate", 0)}%', "Pass Rate", "score ≥ 70"), unsafe_allow_html=True)
+    _metric_styles = [
+        ("#38bdf8,#818cf8", stats["total_sessions"], "Sessions", "screening runs"),
+        ("#34d399,#38bdf8", stats["total_candidates"], "Candidates", "total scans"),
+        ("#818cf8,#c084fc", stats.get("unique_candidates", "—"), "Unique", "distinct names"),
+        ("#c084fc,#f472b6", f'{stats["avg_score"]:.1f}' if stats["avg_score"] else "0", "Avg Score", "out of 100"),
+        ("#fbbf24,#f97316", f'{stats.get("pass_rate", 0)}%', "Pass Rate", "score ≥ 70"),
+    ]
+    for _col, (_grad, _val, _lbl, _sub) in zip([ac1, ac2, ac3, ac4, ac5], _metric_styles):
+        with _col:
+            st.markdown(f"""
+            <div class="glass-card" style="text-align:center;padding:1rem 0.5rem;">
+                <div style="font-size:1.6rem;font-weight:900;background:linear-gradient(135deg,{_grad});
+                            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+                            background-size:200% auto;animation:shimmer 3s linear infinite;">
+                    {_val}</div>
+                <div class="label">{_lbl}</div>
+                <div class="sublabel">{_sub}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
     with ac6:
         top_c = stats.get("top_candidate")
         top_name = "N/A"
