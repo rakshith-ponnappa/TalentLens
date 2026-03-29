@@ -1,10 +1,13 @@
 """
 verifier.py  –  Orchestrator that runs all verifications for a candidate:
-  - All companies in experience
-  - All certifications
-  - LinkedIn profile (if provided)
-  - Identity verification (email, education, web presence, timeline)
-    → activated automatically when LinkedIn is absent
+  - All companies via 9-layer online verification (Known DB → OpenCorporates →
+    LinkedIn → Wikipedia/Wikidata → GitHub org → Domain/TLS → Job boards →
+    DuckDuckGo → Crunchbase)
+  - All certifications via 5-layer verification (Registry → Credly → Issuer
+    pattern → Issuer website → Web search)
+  - LinkedIn profile discovery + validation
+  - Identity verification: email, education (Wikipedia-augmented), web presence
+    (30+ platforms), and experience timeline analysis
 """
 from __future__ import annotations
 
@@ -74,9 +77,12 @@ def _compute_trust(companies, certs, linkedin, identity) -> float:
     scores = []
     weights = []
 
-    # Company legitimacy (average)
+    # Company legitimacy (average across all layers)
     if companies:
         avg = sum(c.legitimacy_score for c in companies) / len(companies)
+        # Bonus: companies verified by multiple sources are more credible
+        multi_source = sum(1 for c in companies if c.source and "," in c.source) / max(len(companies), 1)
+        avg = min(1.0, avg + multi_source * 0.05)
         scores.append(avg)
         weights.append(0.30)
 
@@ -85,10 +91,14 @@ def _compute_trust(companies, certs, linkedin, identity) -> float:
         scores.append(linkedin.authenticity_score)
         weights.append(0.25)
 
-    # Registry presence for any claimed certs
+    # Certifications (registry + online verification)
     if certs:
-        found = sum(1 for c in certs if c.found_in_registry) / len(certs)
-        scores.append(found)
+        # Count both registry matches and online-verified certs
+        verified = sum(
+            1 for c in certs
+            if c.found_in_registry or (c.issuer and c.issuer != "Unknown")
+        ) / len(certs)
+        scores.append(verified)
         weights.append(0.15)
 
     # Identity verification (email + education + web + timeline)
