@@ -509,16 +509,17 @@ def _name_from_email(email: str) -> str:
 
 
 def extract_name(lines: list[str], email: str = "") -> str:
-    """Heuristic: first short all-alpha line at top of resume is the name.
+    """Heuristic: first short line at top of resume that looks like a name.
 
     Enhanced with:
       - Blocklist for common non-name headers (CURRICULUM VITAE, etc.)
       - Location detection to skip address lines
+      - Pipe/parenthesis stripping for "NAME | Title" or "NAME (He/Him)" patterns
       - Email-based name fallback
     """
-    for line in lines[:8]:
+    for line in lines[:10]:
         line = line.strip()
-        if not line or len(line) > 60 or '@' in line:
+        if not line or len(line) > 80 or '@' in line:
             continue
         if re.search(r'https?://', line, re.I):
             continue
@@ -532,8 +533,20 @@ def extract_name(lines: list[str], email: str = "") -> str:
         words = line.split()
         if loc_matches and len(loc_matches) >= len(words) * 0.5:
             continue
-        if 2 <= len(words) <= 5 and all(re.match(r"^[A-Za-z][a-zA-Z'\-\.]*$", w) for w in words):
-            return line
+
+        # Strip pipe-separated suffixes: "JOHN DOE | Cloud Engineer" → "JOHN DOE"
+        name_part = re.split(r'\s*[|•·–—]\s*', line)[0].strip()
+        # Strip parenthetical: "John Doe (He/Him)" → "John Doe"
+        name_part = re.sub(r'\s*\(.*?\)\s*$', '', name_part).strip()
+        # Strip trailing comma + title: "John Doe, MBA" → "John Doe"
+        name_part = re.sub(r',\s*(?:MBA|PhD|PMP|CPA|CFA|CISSP|CISM|CSM|AWS|PE|MD|RN|JD|LLB|MS|MSc|BSc|BE|BTech)\.?\s*$',
+                           '', name_part, flags=re.I).strip()
+
+        name_words = name_part.split()
+        if 2 <= len(name_words) <= 5 and all(
+            re.match(r"^[A-Za-z\u00C0-\u024F][a-zA-Z\u00C0-\u024F'\-\.]*$", w) for w in name_words
+        ):
+            return name_part
 
     # Fallback: try to derive name from email address
     email_name = _name_from_email(email)

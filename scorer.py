@@ -44,7 +44,7 @@ def score_candidate(
 
     # --- Preferred skills ------------------------------------------------
     matched_pref, _ = _match_skills(candidate.skills, jd.preferred_skills, candidate.raw_text)
-    pref_score = (len(matched_pref) / max(len(jd.preferred_skills), 1)) * w.preferred_skills if jd.preferred_skills else w.preferred_skills
+    pref_score = (len(matched_pref) / max(len(jd.preferred_skills), 1)) * w.preferred_skills if jd.preferred_skills else 0.0
 
     # --- Experience years ------------------------------------------------
     exp_score = _score_experience(candidate.total_experience_years, jd, w.experience)

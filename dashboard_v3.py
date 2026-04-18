@@ -42,6 +42,17 @@ from history import (
     get_sessions_by_month, get_sessions_by_year,
     save_jd, get_all_jds, get_jd, update_jd, delete_jd, increment_jd_use_count,
 )
+
+
+def _cand_key(cand) -> str:
+    """Unique key for a candidate — use source_file (unique per upload), fallback to name."""
+    if hasattr(cand, 'source_file') and cand.source_file:
+        return cand.source_file
+    if hasattr(cand, 'candidate'):
+        # CandidateScore wrapper
+        c = cand.candidate
+        return c.source_file if c.source_file else c.name
+    return str(cand)
 from interview_gen import generate_questionnaire, export_questionnaire_docx
 from models import CandidateScore, JDCriteria
 from heuristics import extract_skills, extract_experience_range, extract_education_level, \
@@ -1418,7 +1429,7 @@ elif selected_page == "🔍 Screening":
             progress = st.progress(0, text="Verifying…")
             for i, cand in enumerate(candidates):
                 try:
-                    verifications[cand.name] = run_verification(cand, cfg)
+                    verifications[_cand_key(cand)] = run_verification(cand, cfg)
                 except Exception:
                     pass
                 progress.progress((i + 1) / len(candidates), text=f"✅ Verified {cand.name}")
@@ -1428,7 +1439,7 @@ elif selected_page == "🔍 Screening":
         pipeline_status.markdown("🔄 **Stage 4/5** — Scoring & ranking…")
         scores_list = []
         for cand in candidates:
-            ver = verifications.get(cand.name)
+            ver = verifications.get(_cand_key(cand))
             scores_list.append(score_candidate(cand, jd, ver, cfg))
         ranked = rank_candidates(scores_list)
         st.session_state.scores = ranked
@@ -1440,7 +1451,7 @@ elif selected_page == "🔍 Screening":
             progress = st.progress(0, text="Agent evaluation…")
             for i, s in enumerate(ranked):
                 try:
-                    agent_results[s.candidate.name] = evaluate_candidate(
+                    agent_results[_cand_key(s)] = evaluate_candidate(
                         s.candidate, jd, s, s.verification,
                         selected_agents=selected_agent_names)
                 except Exception as e:
@@ -1453,8 +1464,8 @@ elif selected_page == "🔍 Screening":
         questionnaires = {}
         for s in ranked:
             try:
-                consensus = agent_results.get(s.candidate.name)
-                questionnaires[s.candidate.name] = generate_questionnaire(s.candidate, jd, s, consensus)
+                consensus = agent_results.get(_cand_key(s))
+                questionnaires[_cand_key(s)] = generate_questionnaire(s.candidate, jd, s, consensus)
             except Exception:
                 pass
         st.session_state.questionnaires = questionnaires
@@ -1531,7 +1542,7 @@ elif selected_page == "📊 Results":
                 for idx, col in enumerate(ring_cols[:min(len(scores), 5)]):
                     s = scores[idx]
                     medal = "🥇" if idx == 0 else "🥈" if idx == 1 else "🥉" if idx == 2 else f"#{idx+1}"
-                    consensus = agent_results.get(s.candidate.name)
+                    consensus = agent_results.get(_cand_key(s))
                     agent_score = f"{consensus.consensus_score:.0f}" if consensus else "—"
                     with col:
                         st.markdown(_score_ring(s.overall_score, s.candidate.name[:15]), unsafe_allow_html=True)
@@ -1553,7 +1564,7 @@ elif selected_page == "📊 Results":
             with ov3: st.markdown(_glass_metric(sum(1 for s in scores if s.grade.startswith("A")), "A/A+ Grades", "top tier"), unsafe_allow_html=True)
             with ov4: st.markdown(_glass_metric(top.candidate.name[:16], "Top Candidate", f"{top.overall_score:.1f}/100"), unsafe_allow_html=True)
             with ov5:
-                top_consensus = agent_results.get(top.candidate.name)
+                top_consensus = agent_results.get(_cand_key(top))
                 _agent_label = f"{top_consensus.consensus_recommendation}" if top_consensus else "N/A"
                 st.markdown(_glass_metric(_agent_label, "Agent Verdict", "consensus"), unsafe_allow_html=True)
 
@@ -1567,7 +1578,7 @@ elif selected_page == "📊 Results":
                 req_match = len(s.matched_required_skills)
                 li = s.verification.linkedin
                 li_status = "✅" if (li and li.url_resolves) else "⚠️" if (li and li.url) else "❌"
-                consensus = agent_results.get(s.candidate.name)
+                consensus = agent_results.get(_cand_key(s))
                 agent_rec = consensus.consensus_recommendation if consensus else "N/A"
                 rows.append({
                     "Rank": f"#{s.rank}", "Candidate": s.candidate.name,
@@ -1706,7 +1717,7 @@ elif selected_page == "📊 Results":
             st.markdown('<div class="sec-header">👤 Candidate Detail Cards</div>', unsafe_allow_html=True)
             for s in scores:
                 medal = "🥇" if s.rank == 1 else "🥈" if s.rank == 2 else "🥉" if s.rank == 3 else f"#{s.rank}"
-                consensus = agent_results.get(s.candidate.name)
+                consensus = agent_results.get(_cand_key(s))
                 agent_badge = f" · 🤖 {consensus.consensus_recommendation}" if consensus else ""
                 with st.expander(f"{medal}  {s.candidate.name}  ·  {s.overall_score:.1f}/100  ·  {s.grade}{agent_badge}", expanded=(s.rank == 1)):
                     # Top row: score ring + info + agent verdict

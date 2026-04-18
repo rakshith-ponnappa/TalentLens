@@ -51,6 +51,8 @@ CREATE TABLE IF NOT EXISTS candidates (
     education   TEXT    NOT NULL DEFAULT '[]',
     certifications TEXT NOT NULL DEFAULT '[]',
     source_file TEXT    NOT NULL DEFAULT '',
+    raw_text    TEXT    NOT NULL DEFAULT '',
+    experience_json TEXT NOT NULL DEFAULT '[]',
     overall_score REAL  NOT NULL DEFAULT 0.0,
     grade       TEXT    NOT NULL DEFAULT '',
     rank        INTEGER NOT NULL DEFAULT 0,
@@ -88,7 +90,22 @@ def _get_conn() -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     conn.executescript(_SCHEMA)
+    # Migrate: add columns if missing (for existing databases)
+    _migrate(conn)
     return conn
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    """Add columns that may not exist in older databases."""
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(candidates)").fetchall()}
+    migrations = [
+        ("raw_text", "TEXT NOT NULL DEFAULT ''"),
+        ("experience_json", "TEXT NOT NULL DEFAULT '[]'"),
+    ]
+    for col_name, col_def in migrations:
+        if col_name not in existing:
+            conn.execute(f"ALTER TABLE candidates ADD COLUMN {col_name} {col_def}")
+    conn.commit()
 
 
 # ---------------------------------------------------------------------------
@@ -126,18 +143,20 @@ def save_session(
 
         for s in scores:
             agent_data = {}
-            if agent_results and s.candidate.name in agent_results:
-                ar = agent_results[s.candidate.name]
+            _key = s.candidate.source_file or s.candidate.name
+            if agent_results and _key in agent_results:
+                ar = agent_results[_key]
                 agent_data = _safe_asdict(ar)
 
             conn.execute(
                 """INSERT INTO candidates
                    (session_id, name, email, phone, location, linkedin, github,
                     experience_years, skills, education, certifications, source_file,
+                    raw_text, experience_json,
                     overall_score, grade, rank, breakdown,
                     matched_required, missing_required, matched_preferred,
                     verification, agent_consensus)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     session_id,
                     s.candidate.name,
@@ -151,6 +170,8 @@ def save_session(
                     json.dumps([_safe_asdict(e) for e in s.candidate.education], default=str),
                     json.dumps(s.candidate.certifications, default=str),
                     s.candidate.source_file or "",
+                    s.candidate.raw_text or "",
+                    json.dumps([_safe_asdict(e) for e in s.candidate.experience], default=str),
                     s.overall_score,
                     s.grade,
                     s.rank,
@@ -209,7 +230,7 @@ def get_candidates_for_session(session_id: int) -> list[dict]:
             # Parse JSON fields
             for key in ("skills", "education", "certifications", "breakdown",
                         "matched_required", "missing_required", "matched_preferred",
-                        "verification", "agent_consensus"):
+                        "verification", "agent_consensus", "experience_json"):
                 try:
                     d[key] = json.loads(d[key])
                 except (json.JSONDecodeError, TypeError):
@@ -235,7 +256,7 @@ def get_all_candidates() -> list[dict]:
             d = dict(r)
             for key in ("skills", "education", "certifications", "breakdown",
                         "matched_required", "missing_required", "matched_preferred",
-                        "verification", "agent_consensus"):
+                        "verification", "agent_consensus", "experience_json"):
                 try:
                     d[key] = json.loads(d[key])
                 except (json.JSONDecodeError, TypeError):
@@ -299,6 +320,7 @@ def get_candidate_history(name: str) -> list[dict]:
                FROM candidates c
                JOIN sessions s ON c.session_id = s.id
                WHERE LOWER(c.name) LIKE LOWER(?)
+                 AND LOWER(TRIM(c.name)) != 'unknown'
                ORDER BY c.scanned_at DESC""",
             (f"%{name}%",),
         ).fetchall()
@@ -307,7 +329,7 @@ def get_candidate_history(name: str) -> list[dict]:
             d = dict(r)
             for key in ("skills", "education", "certifications", "breakdown",
                         "matched_required", "missing_required", "matched_preferred",
-                        "verification", "agent_consensus"):
+                        "verification", "agent_consensus", "experience_json"):
                 try:
                     d[key] = json.loads(d[key])
                 except (json.JSONDecodeError, TypeError):
@@ -326,7 +348,9 @@ def get_stats_summary() -> dict:
         cand_count = conn.execute("SELECT COUNT(*) FROM candidates").fetchone()[0]
         # Weighted average: compute from individual candidate scores (not session averages)
         avg_score = conn.execute("SELECT AVG(overall_score) FROM candidates").fetchone()[0] or 0.0
-        unique_cands = conn.execute("SELECT COUNT(DISTINCT LOWER(TRIM(name))) FROM candidates").fetchone()[0]
+        unique_cands = conn.execute(
+            "SELECT COUNT(DISTINCT LOWER(TRIM(name))) FROM candidates WHERE LOWER(TRIM(name)) != 'unknown'"
+        ).fetchone()[0]
         top_row = conn.execute(
             "SELECT name, overall_score FROM candidates ORDER BY overall_score DESC LIMIT 1"
         ).fetchone()

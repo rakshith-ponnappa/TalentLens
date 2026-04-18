@@ -78,7 +78,18 @@ def _read_docx(path: Path) -> str:
     try:
         from docx import Document
         doc = Document(path)
-        return "\n".join(p.text for p in doc.paragraphs)
+        parts: list[str] = []
+        # Extract text from tables first (name/contact often in header tables)
+        for table in doc.tables:
+            for row in table.rows:
+                row_texts = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+                if row_texts:
+                    parts.append("  ".join(row_texts))
+        # Then paragraphs
+        for p in doc.paragraphs:
+            if p.text.strip():
+                parts.append(p.text)
+        return "\n".join(parts)
     except ImportError:
         raise ImportError("Run: pip install python-docx")
 

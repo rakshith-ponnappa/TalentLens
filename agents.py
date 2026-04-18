@@ -1058,131 +1058,112 @@ def evaluate_candidate(
                     f"Recommendation: {ev.recommendation}. {ev.rationale}",
         ))
 
-    # --- Round 2: Cross-perspective discussion ---
-    # Each agent reviews others' findings and may adjust
+    # --- Round 2: Real cross-perspective deliberation ---
+    # Each agent reviews ALL other agents' evaluations and adjusts its score.
     all_concerns = []
     all_strengths = []
+    all_gaps = []
     for ev in evaluations:
         all_concerns.extend(ev.concerns)
         all_strengths.extend(ev.strengths)
+        all_gaps.extend(ev.skill_gaps)
 
-    # Security agent flags for all
+    # Build a shared context summary for agents to react to
+    avg_r1 = sum(e.score for e in evaluations) / max(len(evaluations), 1)
+    concern_counts: dict[str, int] = {}
+    for c in all_concerns:
+        c_lower = c.lower()
+        for bucket in ["security", "retention", "experience", "ops", "cloud",
+                        "quality", "skill", "delivery", "migration", "cost"]:
+            if bucket in c_lower:
+                concern_counts[bucket] = concern_counts.get(bucket, 0) + 1
+
+    # Key cross-perspective adjustments
     sec_ev = next((e for e in evaluations if e.agent_name == "Security Architect"), None)
-    if sec_ev and sec_ev.score < 50:
-        for ev in evaluations:
-            if ev.agent_name != "Security Architect":
-                discussion.append(AgentDiscussion(
-                    round_number=2,
-                    agent_name=ev.agent_name,
-                    message=f"[Response to Security] Noted security concerns. "
-                            f"Adjusting assessment — security gaps could impact "
-                            f"production readiness.",
-                ))
-
-    # Architecture agent comments on technical depth
     arch_ev = next((e for e in evaluations if e.agent_name == "Application Architect"), None)
-    if arch_ev:
-        discussion.append(AgentDiscussion(
-            round_number=2,
-            agent_name="Application Architect",
-            message=f"[Technical Depth Summary] Candidate has "
-                    f"{len(arch_ev.strengths)} architectural strengths and "
-                    f"{len(arch_ev.skill_gaps)} gaps. "
-                    f"{'Strong technical foundation.' if arch_ev.score >= 70 else 'Needs technical growth.'}",
-        ))
-
-    # SRE comments on ops readiness
     sre_ev = next((e for e in evaluations if e.agent_name == "SRE Engineer"), None)
-    if sre_ev:
-        discussion.append(AgentDiscussion(
-            round_number=2,
-            agent_name="SRE Engineer",
-            message=f"[Ops Readiness] {'Production-ready skill set.' if sre_ev.score >= 70 else 'Gaps in operational maturity.'} "
-                    f"Score: {sre_ev.score}/100.",
-        ))
-
-    # QA comments on quality practices
-    qa_ev = next((e for e in evaluations if e.agent_name == "QA Architect"), None)
-    if qa_ev:
-        discussion.append(AgentDiscussion(
-            round_number=2,
-            agent_name="QA Architect",
-            message=f"[Quality Assessment] {'Good quality practices evident.' if qa_ev.score >= 65 else 'Quality gaps need addressing.'} "
-                    f"{'CI/CD present.' if any('ci' in s.lower() for s in qa_ev.strengths) else 'CI/CD absent.'}",
-        ))
-
-    # PO comments on delivery fit
-    po_ev = next((e for e in evaluations if e.agent_name == "Product Owner"), None)
-    if po_ev:
-        discussion.append(AgentDiscussion(
-            round_number=2,
-            agent_name="Product Owner",
-            message=f"[Delivery Fit] {'Good delivery mindset.' if po_ev.score >= 65 else 'Delivery experience needs validation.'} "
-                    f"{'Domain experience present.' if any('domain' in s.lower() or 'industry' in s.lower() for s in po_ev.strengths) else 'Domain fit unclear.'}",
-        ))
-
-    # HR Manager comments on culture and retention
     hr_ev = next((e for e in evaluations if e.agent_name == "HR Manager"), None)
-    if hr_ev:
-        retention_risk = any("retention" in c.lower() for c in hr_ev.concerns)
-        discussion.append(AgentDiscussion(
-            round_number=2,
-            agent_name="HR Manager",
-            message=f"[People Assessment] {'Good culture fit indicators.' if hr_ev.score >= 65 else 'Cultural alignment needs probing.'} "
-                    f"{'⚠️ Retention risk flagged.' if retention_risk else 'No immediate retention concerns.'}",
-        ))
-
-    # Recruiting Engineer comments on market fit
+    qa_ev = next((e for e in evaluations if e.agent_name == "QA Architect"), None)
+    po_ev = next((e for e in evaluations if e.agent_name == "Product Owner"), None)
     rec_ev = next((e for e in evaluations if e.agent_name == "Recruiting Engineer"), None)
-    if rec_ev:
-        discussion.append(AgentDiscussion(
-            round_number=2,
-            agent_name="Recruiting Engineer",
-            message=f"[Market Fit] {'Candidate is well-aligned for role.' if rec_ev.score >= 70 else 'Some role-candidate alignment gaps.'} "
-                    f"{'Competitive profile in market.' if rec_ev.score >= 60 else 'May need to assess competing offers.'}",
-        ))
-
-    # Cloud Solutions Architect on AWS expertise
     cloud_ev = next((e for e in evaluations if e.agent_name == "Cloud Solutions Architect"), None)
-    if cloud_ev:
-        discussion.append(AgentDiscussion(
-            round_number=2,
-            agent_name="Cloud Solutions Architect",
-            message=f"[AWS Architecture] {'Strong AWS architecture foundation.' if cloud_ev.score >= 70 else 'AWS architecture gaps identified.'} "
-                    f"Score: {cloud_ev.score}/100. {len(cloud_ev.skill_gaps)} skill gaps.",
-        ))
-
-    # AWS Migration Engineer on migration readiness
     mig_ev = next((e for e in evaluations if e.agent_name == "AWS Migration Engineer"), None)
-    if mig_ev:
-        discussion.append(AgentDiscussion(
-            round_number=2,
-            agent_name="AWS Migration Engineer",
-            message=f"[Migration Assessment] {'Experienced in cloud migrations.' if mig_ev.score >= 65 else 'Migration experience needs validation.'} "
-                    f"{'Migration tooling proficiency confirmed.' if mig_ev.score >= 70 else 'Gaps in migration methodology or tooling.'}",
-        ))
-
-    # Cloud Operations Engineer on ops maturity
     cops_ev = next((e for e in evaluations if e.agent_name == "Cloud Operations Engineer"), None)
-    if cops_ev:
-        discussion.append(AgentDiscussion(
-            round_number=2,
-            agent_name="Cloud Operations Engineer",
-            message=f"[Ops Maturity] {'Day-2 operations ready.' if cops_ev.score >= 65 else 'Operational maturity needs development.'} "
-                    f"{'Cost optimization aware.' if any('cost' in s.lower() for s in cops_ev.strengths) else 'FinOps gap identified.'}",
-        ))
-
-    # AWS Platform Engineer on platform readiness
     plat_ev = next((e for e in evaluations if e.agent_name == "AWS Platform Engineer"), None)
-    if plat_ev:
+
+    for ev in evaluations:
+        old_score = ev.score
+        adjustment = 0.0
+        reasons = []
+
+        # --- Security red flag: all agents penalise if security is critically low ---
+        if sec_ev and sec_ev.score < 40 and ev.agent_name != "Security Architect":
+            adjustment -= 5
+            reasons.append(f"Security flagged critical gaps (sec score {sec_ev.score})")
+
+        # --- Ops gaps affect cloud/platform agents ---
+        if sre_ev and sre_ev.score < 45 and ev.agent_name in (
+            "Cloud Solutions Architect", "AWS Platform Engineer", "Cloud Operations Engineer"
+        ):
+            adjustment -= 4
+            reasons.append(f"SRE flags ops immaturity ({sre_ev.score}/100)")
+
+        # --- HR retention risk affects all ---
+        if hr_ev and any("retention" in c.lower() for c in hr_ev.concerns):
+            if ev.agent_name != "HR Manager":
+                adjustment -= 2
+                reasons.append("HR flagged retention risk")
+
+        # --- Quality gaps affect delivery assessments ---
+        if qa_ev and qa_ev.score < 45:
+            if ev.agent_name in ("Product Owner", "Application Architect", "SRE Engineer"):
+                adjustment -= 3
+                reasons.append(f"QA flagged quality gaps ({qa_ev.score}/100)")
+
+        # --- Strong architecture boosts cloud/ops confidence ---
+        if arch_ev and arch_ev.score >= 80:
+            if ev.agent_name in ("Cloud Solutions Architect", "AWS Platform Engineer",
+                                  "Cloud Operations Engineer", "SRE Engineer"):
+                adjustment += 3
+                reasons.append(f"Architect confirmed strong foundation ({arch_ev.score}/100)")
+
+        # --- Strong cloud skills boost migration/platform ---
+        if cloud_ev and cloud_ev.score >= 75:
+            if ev.agent_name in ("AWS Migration Engineer", "AWS Platform Engineer",
+                                  "Cloud Operations Engineer"):
+                adjustment += 2
+                reasons.append(f"Cloud architect endorses cloud competency ({cloud_ev.score}/100)")
+
+        # --- Recruiter sees overqualification → temper enthusiasm ---
+        if rec_ev and any("overqualified" in c.lower() for c in rec_ev.concerns):
+            if ev.agent_name in ("HR Manager", "Product Owner"):
+                adjustment -= 2
+                reasons.append("Recruiter flagged overqualification risk")
+
+        # --- Panel consensus drag: if agent is far from average, pull toward center ---
+        if abs(ev.score - avg_r1) > 20:
+            pull = (avg_r1 - ev.score) * 0.15  # max ~3-4 points
+            adjustment += pull
+            reasons.append(f"Adjusting toward panel average ({avg_r1:.0f})")
+
+        # Apply adjustment
+        ev.score = max(0, min(100, round(ev.score + adjustment)))
+        ev.grade = _grade(ev.score)
+        ev.recommendation = _recommendation(ev.score)
+
+        # Record discussion
+        if reasons:
+            msg = (f"[Deliberation] Adjusted {old_score}→{ev.score} after reviewing panel feedback. "
+                   f"Factors: {'; '.join(reasons)}.")
+        else:
+            msg = (f"[Deliberation] Score unchanged at {ev.score}. "
+                   f"No material cross-perspective conflicts found.")
         discussion.append(AgentDiscussion(
             round_number=2,
-            agent_name="AWS Platform Engineer",
-            message=f"[Platform Engineering] {'Solid IaC and automation skills.' if plat_ev.score >= 70 else 'Platform engineering skills need strengthening.'} "
-                    f"{'Container orchestration present.' if any('container' in s.lower() for s in plat_ev.strengths) else 'Container experience limited.'}",
+            agent_name=ev.agent_name,
+            message=msg,
         ))
-
-    # --- Round 3: Consensus ---
+    # --- Round 3: Consensus (uses post-deliberation scores) ---
     # Weighted average (renormalised for subset)
     total_weight = sum(ev.weight for ev in evaluations) * weight_scale
     consensus_score = sum(ev.score * ev.weight * weight_scale for ev in evaluations) / max(total_weight, 0.01)
