@@ -1,8 +1,8 @@
-name: CI
+name: CI — DevSecOps Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
     branches: [main]
 
@@ -12,6 +12,7 @@ concurrency:
 
 permissions:
   contents: read
+  security-events: write
 
 jobs:
   lint:
@@ -68,6 +69,56 @@ jobs:
           name: bandit-report
           path: bandit-report.json
 
+  pip-audit:
+    name: Dependency CVE Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-audit + deps
+        run: |
+          pip install pip-audit
+          pip install -r requirements.txt 2>/dev/null || true
+
+      - name: Run pip-audit
+        run: pip-audit --output=json > pip-audit-report.json 2>&1 || true
+
+      - name: pip-audit summary
+        run: pip-audit
+        continue-on-error: true
+
+      - name: Upload pip-audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+
+  gitleaks:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest
@@ -123,19 +174,37 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest pytest-cov
+          pip install pytest pytest-cov pytest-html allure-pytest
 
       - name: Run tests
         run: |
-          python -m pytest _test_heuristic.py _test_identity.py -v --tb=short --junitxml=test-results.xml
-        continue-on-error: true
+          python -m pytest tests/ \
+            --cov=. \
+            --cov-report=html:htmlcov \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --html=reports/test-report.html --self-contained-html \
+            --alluredir=allure-results \
+            --junitxml=test-results.xml \
+            -v --tb=short
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-py${{ matrix.python-version }}
-          path: test-results.xml
+          path: |
+            test-results.xml
+            htmlcov/
+            coverage.xml
+            reports/test-report.html
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-py${{ matrix.python-version }}
+          path: allure-results/
 
   docker:
     name: Docker Build
@@ -158,3 +227,34 @@ jobs:
           tags: talentlens:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # ── Allure Dashboard (generates from all Python version test results) ──
+  allure-report:
+    name: Allure Dashboard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [test]
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          path: allure-results
+          merge-multiple: true
+
+      - name: Generate Allure report
+        uses: simple-elf/allure-report-action@v1.12
+        with:
+          allure_results: allure-results
+          allure_report: allure-report
+          allure_history: allure-history
+
+      - name: Upload Allure report
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report/

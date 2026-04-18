@@ -1,0 +1,135 @@
+# ============================================================================
+# TalentLens — Local DevSecOps Pipeline (taskctl)
+# ============================================================================
+# Usage:
+#   taskctl run all          — Full pipeline: lint → security → test → report
+#   taskctl run lint         — Ruff lint + format check
+#   taskctl run security     — Bandit SAST + pip-audit + gitleaks
+#   taskctl run test         — pytest with coverage + Allure
+#   taskctl run report       — Generate Allure HTML dashboard
+#   taskctl run typecheck    — MyPy type checking
+#   taskctl run quick        — Fast feedback: lint + test (no security)
+#   taskctl run update-readme — Update README.md with latest test stats
+# ============================================================================
+
+contexts:
+  default:
+    dir: .
+
+pipelines:
+
+  # ── Full DevSecOps pipeline ─────────────────────────────────────
+  all:
+    - task: clean
+    - task: lint
+    - task: typecheck
+    - task: bandit
+    - task: pip-audit
+    - task: gitleaks
+    - task: test
+    - task: report
+
+  # ── Parallel checks (lint + typecheck + security) ──────────────
+  checks:
+    - task: lint
+    - task: typecheck
+    - task: bandit
+    - task: pip-audit
+    - task: gitleaks
+
+  # ── Quick feedback loop (lint + test, skip security) ────────────
+  quick:
+    - task: lint
+    - task: test
+
+  # ── Security-only scan ──────────────────────────────────────────
+  security:
+    - task: bandit
+    - task: pip-audit
+    - task: gitleaks
+
+tasks:
+
+  # ── Clean previous artifacts ────────────────────────────────────
+  clean:
+    description: Remove previous build/test artifacts
+    command:
+      - rm -rf allure-results allure-report htmlcov reports .mypy_cache .ruff_cache
+      - mkdir -p allure-results reports
+
+  # ── Lint (Ruff) ────────────────────────────────────────────────
+  lint:
+    description: Ruff lint + format check
+    command:
+      - echo "══════ RUFF LINT ══════"
+      - ruff check . || true
+      - echo "══════ RUFF FORMAT CHECK ══════"
+      - ruff format --check . || true
+
+  # ── Type checking (MyPy) ───────────────────────────────────────
+  typecheck:
+    description: Static type checking with MyPy
+    command:
+      - echo "══════ MYPY TYPE CHECK ══════"
+      - mypy --config-file pyproject.toml *.py tests/ pages/ --no-error-summary 2>&1 || true
+
+  # ── Security: Bandit (SAST) ────────────────────────────────────
+  bandit:
+    description: Python static application security testing
+    command:
+      - mkdir -p reports
+      - echo "══════ BANDIT SAST SCAN ══════"
+      - bandit -c pyproject.toml -r . --exclude ./.venv,./tests -f json -o reports/bandit-report.json 2>&1 || true
+      - bandit -c pyproject.toml -r . --exclude ./.venv,./tests -f screen || true
+
+  # ── Security: pip-audit (dependency CVEs) ──────────────────────
+  pip-audit:
+    description: Check dependencies for known vulnerabilities
+    command:
+      - mkdir -p reports
+      - echo "══════ PIP-AUDIT CVE SCAN ══════"
+      - pip-audit --output=json > reports/pip-audit-report.json 2>&1 || true
+      - pip-audit || true
+
+  # ── Security: Gitleaks (secret detection) ──────────────────────
+  gitleaks:
+    description: Scan for leaked secrets in git history
+    command:
+      - mkdir -p reports
+      - echo "══════ GITLEAKS SECRET SCAN ══════"
+      - gitleaks detect --source . --report-format json --report-path reports/gitleaks-report.json --no-git 2>&1 || echo "gitleaks scan complete"
+
+  # ── Test (pytest + coverage + allure) ──────────────────────────
+  test:
+    description: Run pytest with coverage and Allure results
+    command:
+      - echo "══════ PYTEST + COVERAGE + ALLURE ══════"
+      - python -m pytest tests/
+        --cov=.
+        --cov-report=html:htmlcov
+        --cov-report=term-missing
+        --cov-report=json:reports/coverage.json
+        --html=reports/test-report.html --self-contained-html
+        --alluredir=allure-results
+        -v --tb=short
+
+  # ── Generate Allure HTML dashboard ─────────────────────────────
+  report:
+    description: Generate Allure interactive test dashboard
+    command:
+      - allure generate allure-results --clean -o allure-report
+      - echo ""
+      - echo "Allure dashboard ready!"
+      - echo "  Open with - allure open allure-report"
+      - echo "  Or open   - allure-report/index.html"
+      - echo "  Coverage  - htmlcov/index.html"
+      - echo "  Test HTML - reports/test-report.html"
+      - echo "  Bandit    - reports/bandit-report.json"
+      - echo "  pip-audit - reports/pip-audit-report.json"
+      - echo "  Gitleaks  - reports/gitleaks-report.json"
+
+  # ── Update README test stats ───────────────────────────────────
+  update-readme:
+    description: Auto-update test stats in README.md
+    command:
+      - python scripts/update_readme_stats.py

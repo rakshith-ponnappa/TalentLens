@@ -54,9 +54,19 @@ Thumbs.db
 .pytest_cache/
 htmlcov/
 coverage.xml
+.coverage
 *.cover
 test-results.xml
 bandit-report.json
+json
+
+# DevSecOps pipeline artifacts
+allure-results/
+allure-report/
+allure-history/
+reports/
+pip-audit-report.json
+gitleaks-report.json
 
 # Docker
 .dockerignore
