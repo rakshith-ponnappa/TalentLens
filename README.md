@@ -11,7 +11,14 @@
 [![Plotly](https://img.shields.io/badge/Plotly-3F4F75?style=for-the-badge&logo=plotly&logoColor=white)](https://plotly.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge)](LICENSE)
 
-[**Getting Started**](#-getting-started) · [**Features**](#-features) · [**Architecture**](#-architecture) · [**Agent Panel**](#-the-11-agent-panel) · [**Dashboard**](#-dashboard) · [**CLI**](#-cli-usage)
+[![Tests](https://img.shields.io/badge/Tests-79%20passed-brightgreen?style=flat-square&logo=pytest)](tests/)
+[![Coverage](https://img.shields.io/badge/Coverage-26%25-yellow?style=flat-square&logo=codecov)](htmlcov/index.html)
+[![Ruff](https://img.shields.io/badge/Linter-Ruff-d4aa00?style=flat-square&logo=ruff)](https://docs.astral.sh/ruff/)
+[![Bandit](https://img.shields.io/badge/SAST-Bandit-blue?style=flat-square&logo=python)](https://bandit.readthedocs.io/)
+[![Gitleaks](https://img.shields.io/badge/Secrets-Gitleaks-red?style=flat-square&logo=git)](https://gitleaks.io/)
+[![taskctl](https://img.shields.io/badge/Pipeline-taskctl-orange?style=flat-square)](https://github.com/taskctl/taskctl)
+
+[**Getting Started**](#-getting-started) · [**Features**](#-features) · [**Architecture**](#-architecture) · [**Agent Panel**](#-the-11-agent-panel) · [**Dashboard**](#-dashboard) · [**CLI**](#-cli-usage) · [**DevSecOps**](#-devsecops-pipeline)
 
 </div>
 
@@ -102,10 +109,28 @@ graph LR
 │   ├── verifier_certs.py    # Cert registry + Credly verification
 │   ├── verifier_linkedin.py # Profile resolution + red flag detection
 │   └── verifier_identity.py # Email, timeline, name cross-reference
+├── pipeline.py              # Hiring pipeline state machine (SQLite)
+├── comparator.py            # Multi-candidate comparison + radar charts
+├── red_flags.py             # Employment gaps, title inflation, email risk
+├── jd_quality.py            # JD scoring + improvement suggestions
+├── archetypes.py            # Role archetype classification
+├── export_engine.py         # MD/JSON/HTML/CSV/DOCX export
 ├── interview_gen.py         # Questionnaire generator + DOCX export
 ├── history.py               # SQLite persistence (sessions, candidates, JDs)
 ├── models.py                # Pydantic/dataclass models
 ├── config.py                # .env loader + weight configuration
+├── tests/                   # 79 pytest tests (7 test modules)
+│   ├── conftest.py          # Shared fixtures
+│   ├── test_pipeline.py     # Pipeline state machine (19 tests)
+│   ├── test_red_flags.py    # Red flag detection (13 tests)
+│   ├── test_comparator.py   # Candidate comparison (12 tests)
+│   ├── test_history.py      # Session/JD persistence (9 tests)
+│   ├── test_archetypes.py   # Role classification (9 tests)
+│   ├── test_export_engine.py# Export formats (7 tests)
+│   └── test_jd_quality.py   # JD quality analysis (6 tests)
+├── taskctl.yaml             # Local DevSecOps pipeline orchestrator
+├── .pre-commit-config.yaml  # Git hooks: ruff, bandit, mypy, gitleaks
+├── .github/workflows/ci.yml # GitHub Actions CI/CD pipeline
 └── data/
     ├── cert_registry.json   # 30+ certifications with verification URLs
     └── known_companies.json # Company verification reference data
@@ -255,10 +280,160 @@ TalentLens cross-references candidate claims against real-world data:
 | **Storage** | SQLite (history, sessions, JDs) |
 | **CLI** | Typer + Rich |
 | **Verification** | OpenCorporates API, DNS MX lookups, HTTP resolution |
-| **Export** | python-docx (DOCX), JSON |
-| **CI/CD** | GitHub Actions (lint, security, typecheck, test, Docker) |
-| **Code Quality** | Ruff (lint+format), Bandit (security), Mypy (types) |
+| **Export** | python-docx (DOCX), JSON, HTML, CSV |
+| **CI/CD** | GitHub Actions + taskctl (local) |
+| **Code Quality** | Ruff (lint+format), Mypy (types), pytest + pytest-cov |
+| **Security** | Bandit (SAST), pip-audit (CVE), Gitleaks (secrets) |
+| **Reporting** | Allure, pytest-html, coverage HTML |
+| **Git Hooks** | pre-commit (ruff, bandit, mypy, gitleaks, conventional commits) |
 | **Containerization** | Docker + Docker Compose |
+
+---
+
+## 🔒 DevSecOps Pipeline
+
+TalentLens ships with a full DevSecOps pipeline that runs **locally** via [taskctl](https://github.com/taskctl/taskctl) and **in CI** via GitHub Actions.
+
+### Pipeline Stages
+
+```mermaid
+graph LR
+    A["🧹 Clean"] --> B["🔍 Lint"]
+    A --> C["📝 Typecheck"]
+    A --> D["🛡️ Bandit"]
+    A --> E["📦 pip-audit"]
+    A --> F["🔑 Gitleaks"]
+    B --> G["🧪 Test"]
+    C --> G
+    D --> G
+    E --> G
+    F --> G
+    G --> H["📊 Report"]
+
+    style A fill:#1e293b,stroke:#6366f1,color:#e2e8f0
+    style B fill:#1e293b,stroke:#f59e0b,color:#e2e8f0
+    style C fill:#1e293b,stroke:#3b82f6,color:#e2e8f0
+    style D fill:#1e293b,stroke:#ef4444,color:#e2e8f0
+    style E fill:#1e293b,stroke:#ef4444,color:#e2e8f0
+    style F fill:#1e293b,stroke:#ef4444,color:#e2e8f0
+    style G fill:#1e293b,stroke:#10b981,color:#e2e8f0
+    style H fill:#1e293b,stroke:#8b5cf6,color:#e2e8f0
+```
+
+| Stage | Tool | What It Does |
+|:------|:-----|:-------------|
+| **Lint** | Ruff | Linting (500+ rules) + format enforcement |
+| **Typecheck** | MyPy | Static type checking across all modules |
+| **SAST** | Bandit | Python security analysis (SQL injection, hardcoded secrets, pickle) |
+| **CVE Scan** | pip-audit | Dependency vulnerability scanning against PyPI advisory DB |
+| **Secrets** | Gitleaks | Detects API keys, tokens, passwords in source + git history |
+| **Test** | pytest | 79 tests across 7 modules with coverage + Allure integration |
+| **Report** | Allure | Interactive HTML dashboard with test history and trends |
+
+### Run Locally
+
+```bash
+# Install taskctl (macOS)
+brew install taskctl
+
+# Full pipeline — lint → security → test → report
+taskctl run all
+
+# Quick feedback — lint + test only
+taskctl run quick
+
+# Security-only scan
+taskctl run security
+
+# Individual stages
+taskctl run lint
+taskctl run test
+taskctl run typecheck
+taskctl run bandit
+```
+
+### Pipeline Output
+
+After `taskctl run all`, the following reports are generated:
+
+| Report | Path | Description |
+|:-------|:-----|:------------|
+| 📊 Allure Dashboard | `allure-report/index.html` | Interactive test results with history |
+| 📈 Coverage HTML | `htmlcov/index.html` | Line-by-line coverage report |
+| 🧪 Test Report | `reports/test-report.html` | Self-contained pytest HTML report |
+| 🛡️ Bandit Report | `reports/bandit-report.json` | SAST findings (severity, CWE, location) |
+| 📦 pip-audit Report | `reports/pip-audit-report.json` | Dependency CVEs found |
+| 🔑 Gitleaks Report | `reports/gitleaks-report.json` | Leaked secrets detected |
+| 📉 Coverage JSON | `reports/coverage.json` | Machine-readable coverage data |
+
+```bash
+# Open Allure dashboard in browser
+allure open allure-report
+```
+
+### Pre-Commit Hooks
+
+Git hooks enforce quality on every commit:
+
+```bash
+# Install hooks (one-time setup)
+pre-commit install
+pre-commit install --hook-type commit-msg
+```
+
+| Hook | Trigger | What It Catches |
+|:-----|:--------|:----------------|
+| **Ruff** | pre-commit | Lint violations, auto-fixes safe issues |
+| **Ruff Format** | pre-commit | Unformatted Python files |
+| **Bandit** | pre-commit | Security issues in changed files |
+| **MyPy** | pre-commit | Type errors in changed files |
+| **Gitleaks** | pre-commit | Secrets about to be committed |
+| **Conventional Commits** | commit-msg | Enforces `feat:`, `fix:`, `docs:` prefixes |
+| **File Hygiene** | pre-commit | Trailing whitespace, YAML/TOML/JSON syntax, large files, merge conflicts, private keys |
+| **Branch Protection** | pre-commit | Prevents direct commits to `main` |
+
+### GitHub Actions CI
+
+The [CI workflow](.github/workflows/ci.yml) runs on every push to `main`/`develop` and all PRs:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    CI — DevSecOps Pipeline               │
+├──────────┬──────────┬──────────┬──────────┬─────────────┤
+│  Lint    │ Security │ pip-audit│ Gitleaks │  Typecheck  │
+│  (Ruff)  │ (Bandit) │  (CVEs)  │ (Secrets)│  (MyPy)    │
+├──────────┴──────────┴──────────┴──────────┴─────────────┤
+│           Test (Python 3.11 / 3.12 / 3.13)              │
+│           pytest + coverage + Allure + JUnit             │
+├─────────────────────────────────────────────────────────┤
+│                 Docker Build (cached)                    │
+├─────────────────────────────────────────────────────────┤
+│              Allure Report (merged results)              │
+└─────────────────────────────────────────────────────────┘
+```
+
+All security reports and test artifacts are uploaded as GitHub Actions artifacts for download.
+
+### Test Suite
+
+<!-- BEGIN TEST STATS -->
+| Metric | Value |
+|:-------|:------|
+| **Total Tests** | 79 |
+| **Test Files** | 7 |
+| **Pass Rate** | 100% |
+| **Coverage** | 25.5% |
+<!-- END TEST STATS -->
+
+| Test Module | Tests | What It Covers |
+|:------------|:-----:|:---------------|
+| `test_pipeline.py` | 19 | Pipeline state machine: stages, transitions, batch ops, audit trail |
+| `test_red_flags.py` | 13 | Employment gaps, job hopping, title inflation, email/education risk |
+| `test_comparator.py` | 12 | Multi-candidate comparison matrix, radar data, stack ranking |
+| `test_history.py` | 9 | Session CRUD, JD management, statistics summary |
+| `test_archetypes.py` | 9 | Role classification: cloud, data, management archetypes |
+| `test_export_engine.py` | 7 | MD/JSON/HTML export, comparative reports, executive summary |
+| `test_jd_quality.py` | 6 | JD analysis: dimensions, word count, red flags, strengths |
 
 ---
 
@@ -278,19 +453,26 @@ docker run -p 8503:8503 --env-file .env talentlens:latest
 ## 🧑‍💻 Development
 
 ```bash
-# Install dev dependencies + pre-commit hooks
-make dev
+# Install dependencies
+pip install -r requirements.txt
 
-# Available commands
-make help          # Show all commands
-make lint          # Run ruff linter
-make format        # Auto-format code
-make security      # Run bandit security scan
-make typecheck     # Run mypy
-make test          # Run all tests
-make dashboard     # Start Streamlit dashboard
-make docker        # Build + run with Docker Compose
-make clean         # Remove caches and build artifacts
+# Install dev tools
+pip install ruff mypy bandit "bandit[toml]" pip-audit pytest pytest-cov pytest-html allure-pytest
+
+# Install pre-commit hooks
+pre-commit install && pre-commit install --hook-type commit-msg
+
+# Full local pipeline (lint + security + test + report)
+taskctl run all
+
+# Quick feedback loop (lint + test)
+taskctl run quick
+
+# Run tests only
+python -m pytest tests/ -v
+
+# Start dashboard
+streamlit run dashboard_v3.py
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide.

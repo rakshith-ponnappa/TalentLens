@@ -3,7 +3,7 @@
 repos:
   # ── Ruff: lint + format ────────────────────────────────────────
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.8
+    rev: v0.15.11
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
@@ -11,7 +11,7 @@ repos:
 
   # ── General file hygiene ───────────────────────────────────────
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -20,20 +20,34 @@ repos:
       - id: check-json
         exclude: .vscode/
       - id: check-added-large-files
-        args: [--maxkb=1000]
+        args: [--maxkb=500]
       - id: check-merge-conflict
       - id: detect-private-key
       - id: no-commit-to-branch
         args: [--branch, main]
 
-  # ── Security scan ──────────────────────────────────────────────
+  # ── Security scan (SAST) ───────────────────────────────────────
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.9
+    rev: 1.9.4
     hooks:
       - id: bandit
         args: [-c, pyproject.toml, -r, .]
         additional_dependencies: ["bandit[toml]"]
         exclude: (test_.*|_test_.*)\.py$
+
+  # ── MyPy (type checking) ──────────────────────────────────────
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.20.1
+    hooks:
+      - id: mypy
+        args: [--config-file, pyproject.toml]
+        pass_filenames: false
+
+  # ── Gitleaks (secret detection) ────────────────────────────────
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
 
   # ── Conventional commits ───────────────────────────────────────
   - repo: https://github.com/compilerla/conventional-pre-commit
