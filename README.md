@@ -11,8 +11,9 @@
 [![Plotly](https://img.shields.io/badge/Plotly-3F4F75?style=for-the-badge&logo=plotly&logoColor=white)](https://plotly.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge)](LICENSE)
 
+[![CI](https://github.com/rakshith-ponnappa/TalentLens/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/rakshith-ponnappa/TalentLens/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/Tests-79%20passed-brightgreen?style=flat-square&logo=pytest)](tests/)
-[![Coverage](https://img.shields.io/badge/Coverage-26%25-yellow?style=flat-square&logo=codecov)](htmlcov/index.html)
+[![Coverage](https://img.shields.io/badge/Coverage-26%25-yellow?style=flat-square&logo=codecov)](#test-suite)
 [![Ruff](https://img.shields.io/badge/Linter-Ruff-d4aa00?style=flat-square&logo=ruff)](https://docs.astral.sh/ruff/)
 [![Bandit](https://img.shields.io/badge/SAST-Bandit-blue?style=flat-square&logo=python)](https://bandit.readthedocs.io/)
 [![Gitleaks](https://img.shields.io/badge/Secrets-Gitleaks-red?style=flat-square&logo=git)](https://gitleaks.io/)
@@ -21,6 +22,20 @@
 [**Getting Started**](#-getting-started) · [**Features**](#-features) · [**Architecture**](#-architecture) · [**Agent Panel**](#-the-11-agent-panel) · [**Dashboard**](#-dashboard) · [**CLI**](#-cli-usage) · [**DevSecOps**](#-devsecops-pipeline)
 
 </div>
+
+---
+
+## ⚡ TL;DR
+
+- **What:** a job description plus a stack of resumes go in. Out come ranked candidates, per-agent evaluations, verification flags and a ready-to-use interview questionnaire.
+- **How:** 11 persona agents score each candidate independently and then reach consensus. Hybrid TF-IDF + SBERT + Jaccard scoring and background checks feed into those scores.
+- **No API key? No problem:** heuristic mode runs the full pipeline offline. Add an OpenAI or Anthropic key for LLM parsing.
+- **Try it in 60 seconds:**
+
+  ```bash
+  pip install -r requirements.txt && streamlit run dashboard_v3.py   # dashboard on :8501
+  python main.py run --jd jd.pdf --resume r1.pdf --resume r2.pdf     # or the CLI
+  ```
 
 ---
 
@@ -231,6 +246,9 @@ python main.py screen *.pdf --top 5 --no-verify
 ## 🖥 Dashboard
 
 The Streamlit dashboard provides a complete screening workflow:
+
+> 📸 **Screenshots / demo GIF: coming soon.** Until then, run `streamlit run dashboard_v3.py` locally (heuristic mode needs no API keys).
+<!-- TODO(owner): add docs/img/dashboard.png (use synthetic resumes only, no real candidate PII) and replace the note above. -->
 
 | Page | Purpose |
 |:-----|:--------|
